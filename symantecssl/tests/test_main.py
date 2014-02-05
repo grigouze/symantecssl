@@ -16,7 +16,6 @@ class WhenTestingMain(unittest.TestCase):
 
     def test_add(self):
         self.assertEqual(add(5, 2), 7)
-        print('HI!')
 
 if __name__ == '__main__':
     unittest.main()
