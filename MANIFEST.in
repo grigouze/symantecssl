@@ -1,0 +1,5 @@
+include ChangeLog
+include README.md
+include Authors
+include LICENSE
+include setup.cfg

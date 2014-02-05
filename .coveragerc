@@ -1,0 +1,8 @@
+[run]
+omit = etc/*,setup.py,*egg*,.tox/*,symantecssl/tests/*
+
+[report]
+ignore_errors = True
+exclude_lines =
+    pragma: no cover
+    @abc.abstractmethod
