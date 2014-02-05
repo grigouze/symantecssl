@@ -2,4 +2,7 @@ include ChangeLog
 include README.md
 include Authors
 include LICENSE
+include VERSION
 include setup.cfg
+include requirements.txt
+include test-requirements.txt
