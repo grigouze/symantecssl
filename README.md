@@ -1,4 +1,4 @@
-[![Build Status](http://jenkins.cloudkeep.io/buildStatus/icon?job=rackspace-barbican-tox)](http://jenkins.cloudkeep.io/job/rackspace-barbican-tox/)
+[![Build Status](http://jenkins.cloudkeep.io/job/rackspace-barbican-tox/badge/icon)](http://jenkins.cloudkeep.io/job/rackspace-barbican-tox/)
 
 symantecssl
 ===========
