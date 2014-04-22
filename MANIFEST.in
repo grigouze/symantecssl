@@ -1,8 +1,5 @@
-include ChangeLog
-include README.md
-include Authors
-include LICENSE
-include VERSION
-include setup.cfg
-include requirements.txt
-include test-requirements.txt
+include CHANGELOG.rst CONTRIBUTING.rst LICENSE README.rst
+
+recursive-include docs *
+prune docs/_build
+recursive-include tests *.py
