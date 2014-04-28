@@ -1,6 +1,0 @@
-nose
-nosexcover
-testtools
-tox
-pep8
-flake8
