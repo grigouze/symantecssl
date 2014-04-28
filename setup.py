@@ -48,5 +48,13 @@ setuptools.setup(
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
 
+    install_requires=[
+        "enum34",
+        "lxml",
+        "requests",
+        "requests-toolbelt",
+        "six",
+    ],
+
     packages=setuptools.find_packages(exclude=["tests", "tests.*"]),
 )
