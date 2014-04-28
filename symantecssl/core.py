@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from .auth import SymantecAuth
+from .order import Order
 from .session import SymantecSession
 
 
@@ -17,3 +18,7 @@ class Symantec(object):
         resp.raise_for_status()
 
         return obj.response(resp.content)
+
+    def order(self, **kwargs):
+        obj = Order(**kwargs)
+        return self.submit(obj)
