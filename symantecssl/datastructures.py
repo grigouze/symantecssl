@@ -39,5 +39,8 @@ class CaseInsensitiveDict(collections.MutableMapping):
     def copy(self):
         return CaseInsensitiveDict(self._store.values())
 
+    def lower_items(self):
+        return ((k, v[1]) for k, v in self._store.items())
+
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, dict(self.items()))

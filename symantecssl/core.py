@@ -7,6 +7,8 @@ from .session import SymantecSession
 
 class Symantec(object):
 
+    order_class = Order
+
     def __init__(self, username, password,
                  url="https://api.geotrust.com/webtrust/partner"):
         self.url = url
@@ -20,5 +22,5 @@ class Symantec(object):
         return obj.response(resp.content)
 
     def order(self, **kwargs):
-        obj = Order(**kwargs)
+        obj = self.order_class(**kwargs)
         return self.submit(obj)

@@ -14,8 +14,6 @@ class SymantecSession(requests.Session):
         super(SymantecSession, self).__init__(*args, **kwargs)
 
         self.headers.update({
-            # Only accept UTF-8 encoded data
-            "Accept-Charset": "utf-8",
             # Set our own custom User-Agent string
             "User-Agent": "symantecssl-py/{0}".format(__version__),
         })
