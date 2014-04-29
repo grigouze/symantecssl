@@ -126,5 +126,3 @@ class Order(BaseModel):
                 "'{0}'".format(errors[0]["ErrorMessage"]),
                 errors=errors,
             )
-
-        return data
