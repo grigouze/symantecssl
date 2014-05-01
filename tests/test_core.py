@@ -60,6 +60,7 @@ class TestSymantec:
             "order",
             "get_order_by_partner_order_id",
             "modify_order",
+            "resend_email",
         ],
     )
     def test_api_methods(self, method, api):
