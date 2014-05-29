@@ -77,3 +77,15 @@ class TestSymantec:
             pretend.call(foo="bar"),
         ]
         assert api.submit.calls == [pretend.call(instance)]
+
+    def test_modify_order(self, api):
+        instance = pretend.stub()
+        results = pretend.stub()
+        api.modify_order_class = pretend.call_recorder(
+            lambda **kw: instance
+        )
+        api.submit = pretend.call_recorder(lambda o: results)
+
+        assert api.modify_order(foo="bar") is results
+        assert api.modify_order_class.calls == [pretend.call(foo="bar")]
+        assert api.submit.calls == [pretend.call(instance)]

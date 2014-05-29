@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from symantecssl.exceptions import SymantecError
-from symantecssl.order import Order, GetOrderByPartnerOrderID
+from symantecssl.order import Order, GetOrderByPartnerOrderID, ModifyOrder
 
 
 def test_order_response_success():
@@ -117,3 +117,44 @@ def test_get_order_by_partner_order_id_response_failure():
         "There was an error getting the order details: 'An Error Message!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!"}]
+
+
+def test_modify_order_response_success():
+    xml = b"""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <ModifyOrder>
+        <OrderResponseHeader>
+            <Timestamp>2014-05-19T12:38:01.835+0000</Timestamp>
+            <PartnerOrderID>OxJL7QuR2gyX7LiQHJun0</PartnerOrderID>
+            <SuccessCode>0</SuccessCode>
+        </OrderResponseHeader>
+    </ModifyOrder>
+    """.strip()
+
+    assert ModifyOrder().response(xml) is None
+
+
+def test_modify_order_response_error():
+    xml = b"""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <ModifyOrder>
+        <OrderResponseHeader>
+            <Timestamp>2014-05-19T12:35:45.250+0000</Timestamp>
+            <Errors>
+                <Error>
+                    <ErrorMessage>An Error Message!!</ErrorMessage>
+                </Error>
+            </Errors>
+            <PartnerOrderID>1234</PartnerOrderID>
+            <SuccessCode>-1</SuccessCode>
+        </OrderResponseHeader>
+    </ModifyOrder>
+    """.strip()
+
+    with pytest.raises(SymantecError) as exc_info:
+        ModifyOrder().response(xml).response(xml)
+
+    assert exc_info.value.args == (
+        "There was an error modifying the order: 'An Error Message!!'",
+    )
+    assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!!"}]
