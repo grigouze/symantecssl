@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from symantecssl.exceptions import SymantecValueError
+from symantecssl.exceptions import SymantecError
 from symantecssl.order import Order, GetOrderByPartnerOrderID
 
 
@@ -39,7 +39,7 @@ def test_order_response_failure():
     </QuickOrder>
     """.strip()
 
-    with pytest.raises(SymantecValueError) as exc_info:
+    with pytest.raises(SymantecError) as exc_info:
         Order().response(xml)
 
     assert exc_info.value.args == (
@@ -110,7 +110,7 @@ def test_get_order_by_partner_order_id_response_failure():
     </GetOrderByPartnerOrderID>
     """.strip()
 
-    with pytest.raises(SymantecValueError) as exc_info:
+    with pytest.raises(SymantecError) as exc_info:
         GetOrderByPartnerOrderID().response(xml).response(xml)
 
     assert exc_info.value.args == (

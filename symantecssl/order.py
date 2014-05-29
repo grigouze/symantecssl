@@ -4,7 +4,7 @@ import enum
 
 import lxml.etree
 
-from .exceptions import SymantecValueError
+from .exceptions import SymantecError
 from .models import BaseModel
 
 
@@ -121,7 +121,7 @@ class Order(BaseModel):
 
             # We only display the first error message here, but all of them
             # will be available on the exception
-            raise SymantecValueError(
+            raise SymantecError(
                 "There was an error submitting this SSL certificate: "
                 "'{0}'".format(errors[0]["ErrorMessage"]),
                 errors=errors,
@@ -150,7 +150,7 @@ class GetOrderByPartnerOrderID(BaseModel):
 
             # We only display the first error message here, but all of them
             # will be available on the exception
-            raise SymantecValueError(
+            raise SymantecError(
                 "There was an error getting the order details: "
                 "'{0}'".format(errors[0]["ErrorMessage"]),
                 errors=errors,
