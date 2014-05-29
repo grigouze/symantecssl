@@ -1,5 +1,6 @@
 .. image:: https://travis-ci.org/cloudkeep/symantecssl.svg?branch=master
    :target: https://travis-ci.org/cloudkeep/symantecssl
+
 .. image:: https://coveralls.io/repos/cloudkeep/symantecssl/badge.png :target: https://coveralls.io/r/cloudkeep/symantecssl
 
 symantecssl
