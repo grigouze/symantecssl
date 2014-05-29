@@ -13,7 +13,10 @@ env:
   - TOXENV=docs
 
 install:
-  - pip install tox
+  - pip install tox coveralls
 
 script:
   - tox
+
+after_success:
+  coveralls
