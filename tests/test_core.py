@@ -54,38 +54,22 @@ class TestSymantec:
         assert obj.serialize.calls == [pretend.call()]
         assert obj.response.calls == [pretend.call(resp.content)]
 
-    def test_order(self, api):
-        order_instance = pretend.stub()
-        results = pretend.stub()
-        api.order_class = pretend.call_recorder(lambda **kw: order_instance)
-        api.submit = pretend.call_recorder(lambda o: results)
-
-        assert api.order(foo="bar") is results
-        assert api.order_class.calls == [pretend.call(foo="bar")]
-        assert api.submit.calls == [pretend.call(order_instance)]
-
-    def test_get_order_by_partner_order_id(self, api):
+    @pytest.mark.parametrize(
+        "method",
+        [
+            "order",
+            "get_order_by_partner_order_id",
+            "modify_order",
+        ],
+    )
+    def test_api_methods(self, method, api):
         instance = pretend.stub()
         results = pretend.stub()
-        api.get_order_by_partner_order_id_class = pretend.call_recorder(
-            lambda **kw: instance
-        )
+        class_ = pretend.call_recorder(lambda **kw: instance)
         api.submit = pretend.call_recorder(lambda o: results)
 
-        assert api.get_order_by_partner_order_id(foo="bar") is results
-        assert api.get_order_by_partner_order_id_class.calls == [
-            pretend.call(foo="bar"),
-        ]
-        assert api.submit.calls == [pretend.call(instance)]
+        setattr(api, "{0}_class".format(method), class_)
 
-    def test_modify_order(self, api):
-        instance = pretend.stub()
-        results = pretend.stub()
-        api.modify_order_class = pretend.call_recorder(
-            lambda **kw: instance
-        )
-        api.submit = pretend.call_recorder(lambda o: results)
-
-        assert api.modify_order(foo="bar") is results
-        assert api.modify_order_class.calls == [pretend.call(foo="bar")]
+        assert getattr(api, method)(foo="bar") is results
+        assert class_.calls == [pretend.call(foo="bar")]
         assert api.submit.calls == [pretend.call(instance)]
