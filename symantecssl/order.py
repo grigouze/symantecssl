@@ -126,3 +126,32 @@ class Order(BaseModel):
                 "'{0}'".format(errors[0]["ErrorMessage"]),
                 errors=errors,
             )
+
+
+class GetOrderByPartnerOrderID(BaseModel):
+
+    _command = "GetOrderByPartnerOrderID"
+
+    def response(self, data):
+        xml = lxml.etree.fromstring(data)
+        success = (
+            int(xml.xpath("QueryResponseHeader/SuccessCode/text()")[0]) == 0
+        )
+
+        if success:
+            return dict(
+                (i.tag, i.text)
+                for i in xml.xpath("OrderDetail/OrderInfo/child::*")
+            )
+        else:
+            errors = []
+            for error in xml.xpath("QueryResponseHeader/Errors/Error"):
+                errors.append(dict((i.tag, i.text) for i in error))
+
+            # We only display the first error message here, but all of them
+            # will be available on the exception
+            raise SymantecValueError(
+                "There was an error getting the order details: "
+                "'{0}'".format(errors[0]["ErrorMessage"]),
+                errors=errors,
+            )

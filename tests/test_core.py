@@ -63,3 +63,17 @@ class TestSymantec:
         assert api.order(foo="bar") is results
         assert api.order_class.calls == [pretend.call(foo="bar")]
         assert api.submit.calls == [pretend.call(order_instance)]
+
+    def test_get_order_by_partner_order_id(self, api):
+        instance = pretend.stub()
+        results = pretend.stub()
+        api.get_order_by_partner_order_id_class = pretend.call_recorder(
+            lambda **kw: instance
+        )
+        api.submit = pretend.call_recorder(lambda o: results)
+
+        assert api.get_order_by_partner_order_id(foo="bar") is results
+        assert api.get_order_by_partner_order_id_class.calls == [
+            pretend.call(foo="bar"),
+        ]
+        assert api.submit.calls == [pretend.call(instance)]
