@@ -4,7 +4,7 @@ import enum
 
 import lxml.etree
 
-from .exceptions import SymantecValueError
+from .exceptions import SymantecError
 from .models import BaseModel
 
 
@@ -121,8 +121,76 @@ class Order(BaseModel):
 
             # We only display the first error message here, but all of them
             # will be available on the exception
-            raise SymantecValueError(
+            raise SymantecError(
                 "There was an error submitting this SSL certificate: "
+                "'{0}'".format(errors[0]["ErrorMessage"]),
+                errors=errors,
+            )
+
+
+class GetOrderByPartnerOrderID(BaseModel):
+
+    _command = "GetOrderByPartnerOrderID"
+
+    def response(self, data):
+        xml = lxml.etree.fromstring(data)
+        success = (
+            int(xml.xpath("QueryResponseHeader/SuccessCode/text()")[0]) == 0
+        )
+
+        if success:
+            return dict(
+                (i.tag, i.text)
+                for i in xml.xpath("OrderDetail/OrderInfo/child::*")
+            )
+        else:
+            errors = []
+            for error in xml.xpath("QueryResponseHeader/Errors/Error"):
+                errors.append(dict((i.tag, i.text) for i in error))
+
+            # We only display the first error message here, but all of them
+            # will be available on the exception
+            raise SymantecError(
+                "There was an error getting the order details: "
+                "'{0}'".format(errors[0]["ErrorMessage"]),
+                errors=errors,
+            )
+
+
+class ModifyOperation(enum.Enum):
+    Approve = "APPROVE"
+    ApproveESSL = "APPROVE_ESSL"
+    ResellerApprove = "RESELLER_APPROVE"
+    ResellerDisapprove = "REELLER_DISAPPROVE"
+    Reject = "REJECT"
+    Cancel = "CANCEL"
+    Deactivate = "DEACTIVATE"
+    RequestOnDemandScan = "REQUEST_ON_DEMAND_SCAN"
+    RequestVulnerabilityScan = "REQUEST_VULNERABILITY_SCAN"
+    UpdateSealPreferences = "UPDATE_SEAL_PREFERENCES"
+    UpdatePostStatus = "UPDATE_POST_STATUS"
+    PushState = "PUSH_ORDER_STATE"
+
+
+class ModifyOrder(BaseModel):
+
+    _command = "ModifyOrder"
+
+    def response(self, data):
+        xml = lxml.etree.fromstring(data)
+        success = (
+            int(xml.xpath("OrderResponseHeader/SuccessCode/text()")[0]) == 0
+        )
+
+        if not success:
+            errors = []
+            for error in xml.xpath("OrderResponseHeader/Errors/Error"):
+                errors.append(dict((i.tag, i.text) for i in error))
+
+            # We only display the first error message here, but all of them
+            # will be available on the exception
+            raise SymantecError(
+                "There was an error modifying the order: "
                 "'{0}'".format(errors[0]["ErrorMessage"]),
                 errors=errors,
             )
