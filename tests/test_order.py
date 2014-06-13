@@ -5,7 +5,8 @@ import pytest
 from symantecssl.exceptions import SymantecError
 from symantecssl.order import(
     Order, GetOrderByPartnerOrderID, GetOrdersByDateRange,
-    GetModifiedOrders, ModifyOrder, ChangeApproverEmail, Reissue
+    GetModifiedOrders, ModifyOrder, ChangeApproverEmail, Reissue,
+    GetQuickApproverList
 )
 
 
@@ -479,5 +480,66 @@ def test_modify_order_response_error():
 
     assert exc_info.value.args == (
         "There was an error modifying the order: 'An Error Message!!'",
+    )
+    assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!!"}]
+
+
+def test_get_quick_approver_list_success():
+    xml = b"""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <GetQuickApproverList>
+        <QueryResponseHeader>
+            <Timestamp>2014-05-29T17:36:43.318+0000</Timestamp>
+            <SuccessCode>0</SuccessCode>
+            <ReturnCount>1</ReturnCount>
+        </QueryResponseHeader>
+        <ApproverList>
+            <Approver>
+                <ApproverEmail>admin@testingsymantecssl.com</ApproverEmail>
+                <ApproverType>Generic</ApproverType>
+            </Approver>
+            <Approver>
+                <ApproverEmail>support_preprod@geotrust.com</ApproverEmail>
+                <ApproverType>Manual</ApproverType>
+            </Approver>
+        </ApproverList>
+    </GetQuickApproverList>
+    """.strip()
+
+    assert GetQuickApproverList().response(xml) == [
+        {
+            "ApproverEmail": "admin@testingsymantecssl.com",
+            "ApproverType": "Generic",
+        },
+        {
+            "ApproverEmail": "support_preprod@geotrust.com",
+            "ApproverType": "Manual",
+        },
+    ]
+
+
+def test_get_quick_approver_list_error():
+    xml = b"""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <GetQuickApproverList>
+        <QueryResponseHeader>
+            <Timestamp>2014-05-29T17:49:18.880+0000</Timestamp>
+            <Errors>
+                <Error>
+                    <ErrorMessage>An Error Message!!</ErrorMessage>
+                </Error>
+            </Errors>
+            <SuccessCode>-1</SuccessCode>
+            <ReturnCount>0</ReturnCount>
+        </QueryResponseHeader>
+        <ApproverList/>
+    </GetQuickApproverList>
+    """.strip()
+
+    with pytest.raises(SymantecError) as exc_info:
+        GetQuickApproverList().response(xml).response(xml)
+
+    assert exc_info.value.args == (
+        "There was an error getting the approver list: 'An Error Message!!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!!"}]

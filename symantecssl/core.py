@@ -4,6 +4,7 @@ from .auth import SymantecAuth
 from .order import(
     Order, GetOrderByPartnerOrderID, GetOrdersByDateRange,
     GetModifiedOrders, ModifyOrder, ChangeApproverEmail, Reissue,
+    GetQuickApproverList
 )
 from .email import ResendEmail
 from .session import SymantecSession
@@ -15,6 +16,7 @@ class Symantec(object):
     get_order_by_partner_order_id_class = GetOrderByPartnerOrderID
     get_orders_by_date_range_class = GetOrdersByDateRange
     get_modified_orders_class = GetModifiedOrders
+    get_quick_approver_list = GetQuickApproverList
     modify_order_class = ModifyOrder
     change_approver_email_class = ChangeApproverEmail
     reissue_class = Reissue
@@ -57,3 +59,6 @@ class Symantec(object):
     def resend_email(self, **kwargs):
         obj = self.resend_email_class(**kwargs)
         return self.submit(obj)
+
+    def get_quick_approver_list(self, **kwargs):
+        return self.submit(self.get_quick_approver_list_class(**kwargs))
