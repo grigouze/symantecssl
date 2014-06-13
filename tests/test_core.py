@@ -59,6 +59,7 @@ class TestSymantec:
         [
             "order",
             "get_order_by_partner_order_id",
+            "get_orders_by_date_range",
             "modify_order",
             "resend_email",
         ],
