@@ -16,7 +16,7 @@ class Symantec(object):
     get_order_by_partner_order_id_class = GetOrderByPartnerOrderID
     get_orders_by_date_range_class = GetOrdersByDateRange
     get_modified_orders_class = GetModifiedOrders
-    get_quick_approver_list = GetQuickApproverList
+    get_quick_approver_list_class = GetQuickApproverList
     modify_order_class = ModifyOrder
     change_approver_email_class = ChangeApproverEmail
     reissue_class = Reissue
