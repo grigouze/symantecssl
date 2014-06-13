@@ -1,7 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 from .auth import SymantecAuth
-from .order import Order, GetOrderByPartnerOrderID, GetOrdersByDateRange, ModifyOrder
+from .order import Order, GetOrderByPartnerOrderID
+from .order import GetOrdersByDateRange, ModifyOrder
 from .email import ResendEmail
 from .session import SymantecSession
 

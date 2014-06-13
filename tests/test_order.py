@@ -3,7 +3,8 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from symantecssl.exceptions import SymantecError
-from symantecssl.order import Order, GetOrderByPartnerOrderID, GetOrdersByDateRange, ModifyOrder
+from symantecssl.order import Order, GetOrderByPartnerOrderID
+from symantecssl.order import GetOrdersByDateRange, ModifyOrder
 
 
 def test_order_response_success():
@@ -118,6 +119,7 @@ def test_get_order_by_partner_order_id_response_failure():
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!"}]
 
+
 def test_get_orders_by_date_range_success():
     xml = b"""
     <?xml version="1.0" encoding="UTF-8"?>
@@ -195,6 +197,7 @@ def test_get_orders_by_date_range_success():
         "ServerCount": "1",
     }
 
+
 def test_get_orders_by_date_range_response_failure():
     xml = b"""
     <?xml version="1.0" encoding="UTF-8"?>
@@ -220,6 +223,7 @@ def test_get_orders_by_date_range_response_failure():
         "There was an error getting the order details: 'An Error Message!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!"}]
+
 
 def test_modify_order_response_success():
     xml = b"""

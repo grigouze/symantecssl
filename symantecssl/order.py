@@ -156,6 +156,7 @@ class GetOrderByPartnerOrderID(BaseModel):
                 errors=errors,
             )
 
+
 class GetOrdersByDateRange(BaseModel):
     _command = "GetOrdersByDateRange"
 
@@ -169,7 +170,6 @@ class GetOrdersByDateRange(BaseModel):
             results = []
             for order in xml.xpath("OrderDetails//OrderInfo"):
                 results.append(dict((i.tag, i.text) for i in order))
-            print(results)
             return results
 
         else:
@@ -184,7 +184,6 @@ class GetOrdersByDateRange(BaseModel):
                 "'{0}'".format(errors[0]["ErrorMessage"]),
                 errors=errors,
             )
-
 
 
 class ModifyOperation(enum.Enum):
