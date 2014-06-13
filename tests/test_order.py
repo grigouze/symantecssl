@@ -4,7 +4,8 @@ import pytest
 
 from symantecssl.exceptions import SymantecError
 from symantecssl.order import(
-    Order, GetOrderByPartnerOrderID, GetOrdersByDateRange, ModifyOrder
+    Order, GetOrderByPartnerOrderID, GetOrdersByDateRange,
+    GetModifiedOrders, ModifyOrder
 )
 
 
@@ -219,6 +220,135 @@ def test_get_orders_by_date_range_response_failure():
 
     with pytest.raises(SymantecError) as exc_info:
         GetOrdersByDateRange().response(xml).response(xml)
+
+    assert exc_info.value.args == (
+        "There was an error getting the order details: 'An Error Message!'",
+    )
+    assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!"}]
+
+
+def test_get_modified_orders_success():
+    xml = b"""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <GetModifiedOrders>
+    <QueryResponseHeader>
+      <Timestamp>2014-05-29T17:36:43.318+0000</Timestamp>
+      <SuccessCode>0</SuccessCode>
+      <ReturnCount>1</ReturnCount>
+    </QueryResponseHeader>
+    <OrderDetails>
+      <OrderDetail>
+        <ModificationEvents>
+          <ModificationEvent>
+            <ModificationEventID>20919342</ModificationEventID>
+            <ModificationEventName>Order Created</ModificationEventName>
+            <ModificationTimestamp>2014-06-12</ModificationTimestamp>
+          </ModificationEvent>
+        </ModificationEvents>
+        <OrderInfo>
+          <Method>RESELLER</Method>
+          <DomainName>testingsymantecssl.com</DomainName>
+          <ProductCode>SSL123</ProductCode>
+          <PartnerOrderID>1234</PartnerOrderID>
+          <ServerCount>1</ServerCount>
+          <ValidityPeriod>12</ValidityPeriod>
+          <OrderStatusMajor>PENDING</OrderStatusMajor>
+          <OrderState>WF_DOMAIN_APPROVAL</OrderState>
+          <OrderDate>2014-05-29T17:36:39.000+0000</OrderDate>
+          <RenewalInd>N</RenewalInd>
+          <Price>35</Price>
+          <GeoTrustOrderID>1806482</GeoTrustOrderID>
+        </OrderInfo>
+      </OrderDetail>
+      <OrderDetail>
+        <ModificationEvents>
+          <ModificationEvent>
+            <ModificationEventID>20919340</ModificationEventID>
+            <ModificationEventName>Order Created</ModificationEventName>
+            <ModificationTimestamp>2014-06-12</ModificationTimestamp>
+          </ModificationEvent>
+        </ModificationEvents>
+        <OrderInfo>
+          <Method>RESELLER</Method>
+          <DomainName>testingsymantecssl.com</DomainName>
+          <ProductCode>SSL123</ProductCode>
+          <PartnerOrderID>1234</PartnerOrderID>
+          <ServerCount>1</ServerCount>
+          <ValidityPeriod>12</ValidityPeriod>
+          <OrderStatusMajor>PENDING</OrderStatusMajor>
+          <OrderState>WF_DOMAIN_APPROVAL</OrderState>
+          <OrderDate>2014-05-29T17:36:39.000+0000</OrderDate>
+          <RenewalInd>N</RenewalInd>
+          <Price>35</Price>
+          <GeoTrustOrderID>1806485</GeoTrustOrderID>
+        </OrderInfo>
+      </OrderDetail>
+    </OrderDetails>
+    </GetModifiedOrders>
+    """.strip()
+
+    response = GetModifiedOrders().response(xml)
+    assert type(response) is list
+    assert response[0]["OrderInfo"] == {
+        "OrderStatusMajor": "PENDING",
+        "GeoTrustOrderID": "1806482",
+        "DomainName": "testingsymantecssl.com",
+        "ProductCode": "SSL123",
+        "ValidityPeriod": "12",
+        "OrderDate": "2014-05-29T17:36:39.000+0000",
+        "Price": "35",
+        "RenewalInd": "N",
+        "Method": "RESELLER",
+        "PartnerOrderID": "1234",
+        "OrderState": "WF_DOMAIN_APPROVAL",
+        "ServerCount": "1",
+    }
+    assert response[0]["ModificationEvents"] == [{
+        "ModificationEventID": "20919342",
+        "ModificationEventName": "Order Created",
+        "ModificationTimestamp": "2014-06-12"
+    }]
+    assert response[1]["OrderInfo"] == {
+        "OrderStatusMajor": "PENDING",
+        "GeoTrustOrderID": "1806485",
+        "DomainName": "testingsymantecssl.com",
+        "ProductCode": "SSL123",
+        "ValidityPeriod": "12",
+        "OrderDate": "2014-05-29T17:36:39.000+0000",
+        "Price": "35",
+        "RenewalInd": "N",
+        "Method": "RESELLER",
+        "PartnerOrderID": "1234",
+        "OrderState": "WF_DOMAIN_APPROVAL",
+        "ServerCount": "1",
+    }
+    assert response[1]["ModificationEvents"] == [{
+        "ModificationEventID": "20919340",
+        "ModificationEventName": "Order Created",
+        "ModificationTimestamp": "2014-06-12"
+    }]
+
+
+def test_get_modified_orders_response_failure():
+    xml = b"""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <GetModifiedOrders>
+        <QueryResponseHeader>
+            <Timestamp>2014-05-29T17:49:18.880+0000</Timestamp>
+            <Errors>
+                <Error>
+                    <ErrorMessage>An Error Message!</ErrorMessage>
+                </Error>
+            </Errors>
+            <SuccessCode>-1</SuccessCode>
+            <ReturnCount>0</ReturnCount>
+        </QueryResponseHeader>
+    <OrderDetail/>
+    </GetModifiedOrders>
+    """.strip()
+
+    with pytest.raises(SymantecError) as exc_info:
+        GetModifiedOrders().response(xml).response(xml)
 
     assert exc_info.value.args == (
         "There was an error getting the order details: 'An Error Message!'",
