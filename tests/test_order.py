@@ -3,8 +3,9 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from symantecssl.exceptions import SymantecError
-from symantecssl.order import Order, GetOrderByPartnerOrderID
-from symantecssl.order import GetOrdersByDateRange, ModifyOrder
+from symantecssl.order import(
+    Order, GetOrderByPartnerOrderID, GetOrdersByDateRange, ModifyOrder
+)
 
 
 def test_order_response_success():
