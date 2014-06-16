@@ -60,6 +60,7 @@ class TestSymantec:
             "order",
             "get_order_by_partner_order_id",
             "modify_order",
+            "validate_order_parameters",
             "resend_email",
         ],
     )

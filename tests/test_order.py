@@ -3,7 +3,9 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from symantecssl.exceptions import SymantecError
-from symantecssl.order import Order, GetOrderByPartnerOrderID, ModifyOrder
+from symantecssl.order import (
+    Order, GetOrderByPartnerOrderID, ModifyOrder, ValidateOrderParameters
+)
 
 
 def test_order_response_success():
@@ -158,3 +160,82 @@ def test_modify_order_response_error():
         "There was an error modifying the order: 'An Error Message!!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!!"}]
+
+
+def test_validate_order_parameters_success():
+    xml = b"""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <ValidateOrderParameters>
+        <ValidityPeriod>12</ValidityPeriod>
+        <Price>$35 USD</Price>
+        <OrderResponseHeader>
+            <Timestamp>2014-06-16T16:55:58.611+0000</Timestamp>
+            <SuccessCode>0</SuccessCode>
+        </OrderResponseHeader>
+        <ParsedCSR>
+            <State>Texas</State>
+            <Country>US</Country>
+            <DomainName>testingsymantecssl.com</DomainName>
+            <EncryptionAlgorithm>RSA</EncryptionAlgorithm>
+            <Locality>San Antonio</Locality>
+            <Organization>Test</Organization>
+            <Email/>
+            <HashAlgorithm>SHA1</HashAlgorithm>
+            <OrganizationUnit/>
+            <IsValidTrueDomainName>true</IsValidTrueDomainName>
+            <IsValidQuickDomainName>true</IsValidQuickDomainName>
+            <HasBadExtensions>false</HasBadExtensions>
+        </ParsedCSR>
+        <CertificateSignatureHashAlgorithm>SHA1</CertificateSignatureHashAlgorithm>
+    </ValidateOrderParameters>
+    """.strip()
+
+    assert ValidateOrderParameters().response(xml) is None
+
+
+def test_validate_order_parameters_error():
+    xml = b"""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <ValidateOrderParameters>
+        <ValidityPeriod>0</ValidityPeriod>
+        <OrderResponseHeader>
+            <Timestamp>2014-06-16T16:54:34.260+0000</Timestamp>
+            <Errors>
+                <Error>
+                    <ErrorCode>-2019</ErrorCode>
+                    <ErrorField>ValidityPeriod</ErrorField>
+                    <ErrorMessage>Validity period not valid</ErrorMessage>
+                </Error>
+            </Errors>
+            <SuccessCode>-1</SuccessCode>
+        </OrderResponseHeader>
+        <ParsedCSR>
+            <State>Texas</State>
+            <Country>US</Country>
+            <DomainName>testingsymantecssl.com</DomainName>
+            <EncryptionAlgorithm>RSA</EncryptionAlgorithm>
+            <Locality>San Antonio</Locality>
+            <Organization>Test</Organization>
+            <Email/>
+            <HashAlgorithm>SHA1</HashAlgorithm>
+            <OrganizationUnit/>
+            <IsValidTrueDomainName>true</IsValidTrueDomainName>
+            <IsValidQuickDomainName>true</IsValidQuickDomainName>
+            <HasBadExtensions>false</HasBadExtensions>
+        </ParsedCSR>
+        <CertificateSignatureHashAlgorithm>SHA1</CertificateSignatureHashAlgorithm>
+    </ValidateOrderParameters>
+    """.strip()
+
+    with pytest.raises(SymantecError) as exc_info:
+        ValidateOrderParameters().response(xml).response(xml)
+
+    assert exc_info.value.args == (
+        "There was an error validating the order parameters: "
+        "'Validity period not valid'",
+    )
+    assert exc_info.value.errors == [{
+        "ErrorCode": "-2019",
+        "ErrorField": "ValidityPeriod",
+        "ErrorMessage": "Validity period not valid",
+    }]
