@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from .auth import SymantecAuth
 from .order import(
     Order, GetOrderByPartnerOrderID, GetOrdersByDateRange,
-    GetModifiedOrders, ModifyOrder,
+    GetModifiedOrders, ModifyOrder, ChangeApproverEmail,
 )
 from .email import ResendEmail
 from .session import SymantecSession
@@ -16,6 +16,7 @@ class Symantec(object):
     get_orders_by_date_range_class = GetOrdersByDateRange
     get_modified_orders_class = GetModifiedOrders
     modify_order_class = ModifyOrder
+    change_approver_email_class = ChangeApproverEmail
     resend_email_class = ResendEmail
 
     def __init__(self, username, password,
@@ -45,6 +46,9 @@ class Symantec(object):
 
     def modify_order(self, **kwargs):
         return self.submit(self.modify_order_class(**kwargs))
+
+    def change_approver_email(self, **kwargs):
+        return self.submit(self.change_approver_email_class(**kwargs))
 
     def resend_email(self, **kwargs):
         obj = self.resend_email_class(**kwargs)
