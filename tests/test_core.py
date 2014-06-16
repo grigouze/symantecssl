@@ -62,6 +62,7 @@ class TestSymantec:
             "get_orders_by_date_range",
             "get_modified_orders",
             "change_approver_email",
+            "reissue",
             "modify_order",
             "resend_email",
         ],

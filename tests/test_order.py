@@ -5,7 +5,7 @@ import pytest
 from symantecssl.exceptions import SymantecError
 from symantecssl.order import(
     Order, GetOrderByPartnerOrderID, GetOrdersByDateRange,
-    GetModifiedOrders, ModifyOrder, ChangeApproverEmail,
+    GetModifiedOrders, ModifyOrder, ChangeApproverEmail, Reissue
 )
 
 
@@ -359,13 +359,13 @@ def test_get_modified_orders_response_failure():
 def test_change_approver_email_response_success():
     xml = b"""
     <?xml version="1.0" encoding="UTF-8"?>
-    <ModifyOrder>
+    <ChangeApproverEmail>
         <OrderResponseHeader>
             <Timestamp>2014-05-19T12:38:01.835+0000</Timestamp>
             <PartnerOrderID>OxJL7QuR2gyX7LiQHJun0</PartnerOrderID>
             <SuccessCode>0</SuccessCode>
         </OrderResponseHeader>
-    </ModifyOrder>
+    </ChangeApproverEmail>
     """.strip()
 
     assert ChangeApproverEmail().response(xml) is None
@@ -374,7 +374,7 @@ def test_change_approver_email_response_success():
 def test_change_approver_email_response_error():
     xml = b"""
     <?xml version="1.0" encoding="UTF-8"?>
-    <ModifyOrder>
+    <ChangeApproverEmail>
         <OrderResponseHeader>
             <Timestamp>2014-05-19T12:35:45.250+0000</Timestamp>
             <Errors>
@@ -385,7 +385,7 @@ def test_change_approver_email_response_error():
             <PartnerOrderID>1234</PartnerOrderID>
             <SuccessCode>-1</SuccessCode>
         </OrderResponseHeader>
-    </ModifyOrder>
+    </ChangeApproverEmail>
     """.strip()
 
     with pytest.raises(SymantecError) as exc_info:
@@ -393,6 +393,51 @@ def test_change_approver_email_response_error():
 
     assert exc_info.value.args == (
         "There was an error changing the approver email: 'An Error Message!!'",
+    )
+    assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!!"}]
+
+
+def test_reissue_response_success():
+    xml = b"""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Reissue>
+        <OrderResponseHeader>
+            <Timestamp>2014-06-16T19:24:26.053+0000</Timestamp>
+            <PartnerOrderID>1234</PartnerOrderID>
+            <SuccessCode>0</SuccessCode>
+        </OrderResponseHeader>
+        <GeoTrustOrderID>abcdefg</GeoTrustOrderID>
+    </Reissue>
+    """.strip()
+
+    assert Reissue().response(xml) == {
+        "PartnerOrderID": "1234",
+        "GeoTrustOrderID": "abcdefg",
+    }
+
+
+def test_reissue_response_error():
+    xml = b"""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Reissue>
+        <OrderResponseHeader>
+            <Timestamp>2014-05-19T12:35:45.250+0000</Timestamp>
+            <Errors>
+                <Error>
+                    <ErrorMessage>An Error Message!!</ErrorMessage>
+                </Error>
+            </Errors>
+            <PartnerOrderID>1234</PartnerOrderID>
+            <SuccessCode>-1</SuccessCode>
+        </OrderResponseHeader>
+    </Reissue>
+    """.strip()
+
+    with pytest.raises(SymantecError) as exc_info:
+        Reissue().response(xml).response(xml)
+
+    assert exc_info.value.args == (
+        "There was an error reissuing: 'An Error Message!!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!!"}]
 

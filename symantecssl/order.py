@@ -256,6 +256,37 @@ class ChangeApproverEmail(BaseModel):
             )
 
 
+class Reissue(BaseModel):
+
+    _command = "Reissue"
+
+    def response(self, data):
+        xml = lxml.etree.fromstring(data)
+        success = (
+            int(xml.xpath("OrderResponseHeader/SuccessCode/text()")[0]) == 0
+        )
+
+        if success:
+            return {
+                "PartnerOrderID": xml.xpath(
+                    "OrderResponseHeader/PartnerOrderID/text()"
+                )[0],
+                "GeoTrustOrderID": xml.xpath("GeoTrustOrderID/text()")[0],
+            }
+        else:
+            errors = []
+            for error in xml.xpath("OrderResponseHeader/Errors/Error"):
+                errors.append(dict((i.tag, i.text) for i in error))
+
+            # We only display the first error message here, but all of them
+            # will be available on the exception
+            raise SymantecError(
+                "There was an error reissuing: "
+                "'{0}'".format(errors[0]["ErrorMessage"]),
+                errors=errors,
+            )
+
+
 class ModifyOperation(enum.Enum):
     Approve = "APPROVE"
     ApproveESSL = "APPROVE_ESSL"
