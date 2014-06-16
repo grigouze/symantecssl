@@ -326,6 +326,41 @@ class ModifyOrder(BaseModel):
             )
 
 
+class ValidateOrderParameters(BaseModel):
+
+    _command = "ValidateOrderParameters"
+
+    def response(self, data):
+        xml = lxml.etree.fromstring(data)
+        success = (
+            int(xml.xpath("OrderResponseHeader/SuccessCode/text()")[0]) == 0
+        )
+
+        if success:
+            result = {}
+            for outer in xml.xpath("/ValidateOrderParameters/child::*"):
+                if outer.tag == "OrderResponseHeader":
+                    continue
+
+                if outer.xpath('count(child::*)') > 0:
+                    result[outer.tag] = dict((i.tag, i.text) for i in outer)
+                else:
+                    result[outer.tag] = outer.text
+            return result
+        else:
+            errors = []
+            for error in xml.xpath("OrderResponseHeader/Errors/Error"):
+                errors.append(dict((i.tag, i.text) for i in error))
+
+            # We only display the first error message here, but all of them
+            # will be available on the exception
+            raise SymantecError(
+                "There was an error validating the order parameters: "
+                "'{0}'".format(errors[0]["ErrorMessage"]),
+                errors=errors,
+            )
+
+
 class GetQuickApproverList(BaseModel):
 
     _command = "GetQuickApproverList"
