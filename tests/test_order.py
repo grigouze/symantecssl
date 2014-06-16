@@ -2,12 +2,34 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
+import lxml.etree
+
 from symantecssl.exceptions import SymantecError
 from symantecssl.order import(
     Order, GetOrderByPartnerOrderID, GetOrdersByDateRange,
-    GetModifiedOrders, ModifyOrder, ChangeApproverEmail, Reissue,
+    GetModifiedOrders, ModifyOrder, ChangeApproverEmail, Reissue, Revoke
     GetQuickApproverList, ValidateOrderParameters
 )
+
+
+def test_xml_to_dict():
+    xml = b"""
+    <A>
+        <B>Something</B>
+        <C>
+            <D>MoreSomething</D>
+        </C>
+        <E>1234</E>
+    </A>
+    """.strip()
+
+    assert xml_to_dict(lxml.etree.fromstring(xml)) == {
+        "B": "Something",
+        "C": {
+            "D": "MoreSomething",
+        },
+        "E": "1234",
+    }
 
 
 def test_order_response_success():
@@ -76,23 +98,45 @@ def test_get_order_by_partner_order_id_response_success():
                 <Price>35</Price>
                 <GeoTrustOrderID>1806482</GeoTrustOrderID>
             </OrderInfo>
+            <CertificateInfo>
+                <CertificateStatus>Good!</CertificateStatus>
+                <StartDate>Today</StartDate>
+            </CertificateInfo>
+            <OrderContacts>
+                <AdminContact>
+                    <FirstName>John</FirstName>
+                    <LastName>Doe</LastName>
+                </AdminContact>
+            </OrderContacts>
         </OrderDetail>
     </GetOrderByPartnerOrderID>
     """.strip()
 
     assert GetOrderByPartnerOrderID().response(xml) == {
-        "OrderStatusMajor": "PENDING",
-        "GeoTrustOrderID": "1806482",
-        "DomainName": "testingsymantecssl.com",
-        "ProductCode": "SSL123",
-        "ValidityPeriod": "12",
-        "OrderDate": "2014-05-29T17:36:39.000+0000",
-        "Price": "35",
-        "RenewalInd": "N",
-        "Method": "RESELLER",
-        "PartnerOrderID": "1234",
-        "OrderState": "WF_DOMAIN_APPROVAL",
-        "ServerCount": "1",
+        "OrderInfo": {
+            "OrderStatusMajor": "PENDING",
+            "GeoTrustOrderID": "1806482",
+            "DomainName": "testingsymantecssl.com",
+            "ProductCode": "SSL123",
+            "ValidityPeriod": "12",
+            "OrderDate": "2014-05-29T17:36:39.000+0000",
+            "Price": "35",
+            "RenewalInd": "N",
+            "Method": "RESELLER",
+            "PartnerOrderID": "1234",
+            "OrderState": "WF_DOMAIN_APPROVAL",
+            "ServerCount": "1",
+        },
+        "CertificateInfo": {
+            "CertificateStatus": "Good!",
+            "StartDate": "Today",
+        },
+        "OrderContacts": {
+            "AdminContact": {
+                "FirstName": "John",
+                "LastName": "Doe",
+            },
+        },
     }
 
 
@@ -441,6 +485,50 @@ def test_reissue_response_error():
         "There was an error reissuing: 'An Error Message!!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!!"}]
+
+
+def test_revoke_response_success():
+    xml = b"""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Revoke>
+        <OrderResponseHeader>
+            <PartnerOrderID>1234</PartnerOrderID>
+            <SuccessCode>0</SuccessCode>
+        </OrderResponseHeader>
+        <GeoTrustOrderID>abcdefg</GeoTrustOrderID>
+        <SerialNumber>11111</SerialNumber>
+    </Revoke>
+    """.strip()
+
+    assert Revoke().response(xml) == {
+        "PartnerOrderID": "1234",
+        "GeoTrustOrderID": "abcdefg",
+        "SerialNumber": "11111",
+    }
+
+
+def test_revoke_response_failure():
+    xml = b"""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Revoke>
+        <OrderResponseHeader>
+            <Errors>
+                <Error>
+                    <ErrorMessage>An Error!</ErrorMessage>
+                </Error>
+            </Errors>
+            <SuccessCode>1</SuccessCode>
+        </OrderResponseHeader>
+    </Revoke>
+    """.strip()
+
+    with pytest.raises(SymantecError) as exc_info:
+        Revoke().response(xml)
+
+    assert exc_info.value.args == (
+        "There was an error with revocation: 'An Error!'",
+    )
+    assert exc_info.value.errors == [{"ErrorMessage": "An Error!"}]
 
 
 def test_modify_order_response_success():

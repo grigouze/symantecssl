@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from .auth import SymantecAuth
 from .order import (
     Order, GetOrderByPartnerOrderID, GetOrdersByDateRange,
-    GetModifiedOrders, ModifyOrder, ChangeApproverEmail, Reissue,
+    GetModifiedOrders, ModifyOrder, ChangeApproverEmail, Reissue, Revoke,
     GetQuickApproverList, ValidateOrderParameters
 )
 from .email import ResendEmail
@@ -21,6 +21,7 @@ class Symantec(object):
     validate_order_parameters_class = ValidateOrderParameters
     change_approver_email_class = ChangeApproverEmail
     reissue_class = Reissue
+    revoke_class = Revoke
     resend_email_class = ResendEmail
 
     def __init__(self, username, password,
@@ -56,6 +57,9 @@ class Symantec(object):
 
     def reissue(self, **kwargs):
         return self.submit(self.reissue_class(**kwargs))
+
+    def revoke(self, **kwargs):
+        return self.submit(self.revoke_class(**kwargs))
 
     def resend_email(self, **kwargs):
         obj = self.resend_email_class(**kwargs)

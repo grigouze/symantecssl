@@ -64,6 +64,7 @@ class TestSymantec:
             "change_approver_email",
             "reissue",
             "get_quick_approver_list",
+            "revoke",
             "modify_order",
             "validate_order_parameters",
             "resend_email",
