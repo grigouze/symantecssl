@@ -324,3 +324,34 @@ class ModifyOrder(BaseModel):
                 "'{0}'".format(errors[0]["ErrorMessage"]),
                 errors=errors,
             )
+
+
+class GetQuickApproverList(BaseModel):
+
+    _command = "GetQuickApproverList"
+
+    def response(self, data):
+        xml = lxml.etree.fromstring(data)
+        success = (
+            int(xml.xpath("QueryResponseHeader/SuccessCode/text()")[0]) == 0
+        )
+
+        if success:
+            result = []
+            for approver in xml.xpath("ApproverList/Approver"):
+                result.append(dict(
+                    (i.tag, i.text) for i in approver
+                ))
+            return result
+        else:
+            errors = []
+            for error in xml.xpath("QueryResponseHeader/Errors/Error"):
+                errors.append(dict((i.tag, i.text) for i in error))
+
+            # We only display the first error message here, but all of them
+            # will be available on the exception
+            raise SymantecError(
+                "There was an error getting the approver list: "
+                "'{0}'".format(errors[0]["ErrorMessage"]),
+                errors=errors,
+            )

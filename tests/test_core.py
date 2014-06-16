@@ -63,6 +63,7 @@ class TestSymantec:
             "get_modified_orders",
             "change_approver_email",
             "reissue",
+            "get_quick_approver_list",
             "modify_order",
             "resend_email",
         ],
