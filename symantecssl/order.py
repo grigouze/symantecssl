@@ -206,7 +206,18 @@ class ValidateOrderParameters(BaseModel):
             int(xml.xpath("OrderResponseHeader/SuccessCode/text()")[0]) == 0
         )
 
-        if not success:
+        if success:
+            result = {}
+            for outer in xml.xpath("/ValidateOrderParameters/child::*"):
+                if outer.tag == "OrderResponseHeader":
+                    continue
+
+                if outer.xpath('count(child::*)') > 0:
+                    result[outer.tag] = dict((i.tag, i.text) for i in outer)
+                else:
+                    result[outer.tag] = outer.text
+            return result
+        else:
             errors = []
             for error in xml.xpath("OrderResponseHeader/Errors/Error"):
                 errors.append(dict((i.tag, i.text) for i in error))

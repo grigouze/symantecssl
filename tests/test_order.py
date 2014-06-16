@@ -190,7 +190,25 @@ def test_validate_order_parameters_success():
     </ValidateOrderParameters>
     """.strip()
 
-    assert ValidateOrderParameters().response(xml) is None
+    assert ValidateOrderParameters().response(xml) == {
+        "ValidityPeriod": "12",
+        "Price": "$35 USD",
+        "ParsedCSR": {
+            "State": "Texas",
+            "Country": "US",
+            "DomainName": "testingsymantecssl.com",
+            "EncryptionAlgorithm": "RSA",
+            "Locality": "San Antonio",
+            "Organization": "Test",
+            "Email": None,
+            "HashAlgorithm": "SHA1",
+            "OrganizationUnit": None,
+            "IsValidTrueDomainName": "true",
+            "IsValidQuickDomainName": "true",
+            "HasBadExtensions": "false",
+        },
+        "CertificateSignatureHashAlgorithm": "SHA1",
+    }
 
 
 def test_validate_order_parameters_error():
