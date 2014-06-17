@@ -4,6 +4,7 @@ import enum
 
 import lxml.etree
 
+from .utils import xml_to_dict
 from .exceptions import SymantecError
 from .models import BaseModel
 
@@ -95,19 +96,6 @@ class WebServer(enum.IntEnum):
     WebStar = 32
 
     Other = 18
-
-
-def xml_to_dict(node):
-    """
-    node should be an lxml.etree element.
-    """
-    result = {}
-    for child in node:
-        if child.xpath("count(child::*)") > 0:
-            result[child.tag] = xml_to_dict(child)
-        else:
-            result[child.tag] = child.text
-    return result
 
 
 class Order(BaseModel):
