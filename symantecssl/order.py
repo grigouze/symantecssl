@@ -2,10 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import enum
 
-import lxml.etree
-
 from .utils import xml_to_dict
-from .exceptions import SymantecError
 from .models import BaseModel
 
 
@@ -102,219 +99,95 @@ class Order(BaseModel):
 
     _command = "QuickOrder"
 
-    def response(self, data):
-        xml = lxml.etree.fromstring(data)
-        success = (
-            int(xml.xpath("OrderResponseHeader/SuccessCode/text()")[0]) == 0
-        )
-
-        if success:
-            return {
-                "PartnerOrderID": xml.xpath(
-                    "OrderResponseHeader/PartnerOrderID/text()"
-                )[0],
-                "GeoTrustOrderID": xml.xpath("GeoTrustOrderID/text()")[0],
-            }
-        else:
-            errors = []
-            for error in xml.xpath("OrderResponseHeader/Errors/Error"):
-                errors.append(dict((i.tag, i.text) for i in error))
-
-            # We only display the first error message here, but all of them
-            # will be available on the exception
-            raise SymantecError(
-                "There was an error submitting this SSL certificate: "
-                "'{0}'".format(errors[0]["ErrorMessage"]),
-                errors=errors,
-            )
+    def response_result(self, xml):
+        return {
+            "PartnerOrderID": xml.xpath(
+                "OrderResponseHeader/PartnerOrderID/text()"
+            )[0],
+            "GeoTrustOrderID": xml.xpath("GeoTrustOrderID/text()")[0],
+        }
 
 
 class GetOrderByPartnerOrderID(BaseModel):
 
     _command = "GetOrderByPartnerOrderID"
 
-    def response(self, data):
-        xml = lxml.etree.fromstring(data)
-        success = (
-            int(xml.xpath("QueryResponseHeader/SuccessCode/text()")[0]) == 0
-        )
-
-        if success:
-            return xml_to_dict(xml.xpath("OrderDetail")[0])
-        else:
-            errors = []
-            for error in xml.xpath("QueryResponseHeader/Errors/Error"):
-                errors.append(dict((i.tag, i.text) for i in error))
-
-            # We only display the first error message here, but all of them
-            # will be available on the exception
-            raise SymantecError(
-                "There was an error getting the order details: "
-                "'{0}'".format(errors[0]["ErrorMessage"]),
-                errors=errors,
-            )
+    def response_result(self, xml):
+        return xml_to_dict(xml.xpath("OrderDetail")[0])
 
 
 class GetOrdersByDateRange(BaseModel):
+
     _command = "GetOrdersByDateRange"
 
-    def response(self, data):
-        xml = lxml.etree.fromstring(data)
-        success = (
-            int(xml.xpath("QueryResponseHeader/SuccessCode/text()")[0]) == 0
-        )
-
-        if success:
-            results = []
-            for order in xml.xpath("OrderDetails//OrderInfo"):
-                results.append(dict((i.tag, i.text) for i in order))
-            return results
-
-        else:
-            errors = []
-            for error in xml.xpath("QueryResponseHeader/Errors/Error"):
-                errors.append(dict((i.tag, i.text) for i in error))
-
-            # We only display the first error message here, but all of them
-            # will be available on the exception
-            raise SymantecError(
-                "There was an error getting the order details: "
-                "'{0}'".format(errors[0]["ErrorMessage"]),
-                errors=errors,
-            )
+    def response_result(self, xml):
+        results = []
+        for order in xml.xpath("OrderDetails//OrderInfo"):
+            results.append(dict((i.tag, i.text) for i in order))
+        return results
 
 
 class GetModifiedOrders(BaseModel):
+
     _command = "GetModifiedOrders"
 
-    def response(self, data):
-        xml = lxml.etree.fromstring(data)
-        success = (
-            int(xml.xpath("QueryResponseHeader/SuccessCode/text()")[0]) == 0
-        )
+    def response_result(self, xml):
+        results = []
+        for order in xml.xpath("OrderDetails/OrderDetail"):
+            # Since we are grabbing both OrderInfo and Modification Events,
+            # results is a dict for each category, which is easier than
+            # predicting the order these two will be in.
+            nodes = {}
+            categories = dict((i.tag, i) for i in order)
 
-        if success:
-            results = []
-            for order in xml.xpath("OrderDetails/OrderDetail"):
-                # Since we are grabbing both OrderInfo and Modification Events,
-                # results is a dict for each category, which is easier than
-                # predicting the order these two will be in.
-                nodes = {}
-                categories = dict((i.tag, i) for i in order)
-
-                # Same as in the other "get" methods.
-                nodes["OrderInfo"] = dict(
-                    (i.tag, i.text) for i in categories["OrderInfo"]
-                )
-
-                # A list of events; each entry contains a dict of values.
-                events = []
-                for event in categories["ModificationEvents"]:
-                    events.append(dict((i.tag, i.text) for i in event))
-                nodes["ModificationEvents"] = events
-
-                results.append(nodes)
-            return results
-
-        else:
-            errors = []
-            for error in xml.xpath("QueryResponseHeader/Errors/Error"):
-                errors.append(dict((i.tag, i.text) for i in error))
-
-            # We only display the first error message here, but all of them
-            # will be available on the exception
-            raise SymantecError(
-                "There was an error getting the order details: "
-                "'{0}'".format(errors[0]["ErrorMessage"]),
-                errors=errors,
+            # Same as in the other "get" methods.
+            nodes["OrderInfo"] = dict(
+                (i.tag, i.text) for i in categories["OrderInfo"]
             )
+
+            # A list of events; each entry contains a dict of values.
+            events = []
+            for event in categories["ModificationEvents"]:
+                events.append(dict((i.tag, i.text) for i in event))
+            nodes["ModificationEvents"] = events
+
+            results.append(nodes)
+        return results
 
 
 class ChangeApproverEmail(BaseModel):
 
     _command = "ChangeApproverEmail"
 
-    def response(self, data):
-        xml = lxml.etree.fromstring(data)
-        success = (
-            int(xml.xpath("OrderResponseHeader/SuccessCode/text()")[0]) == 0
-        )
-
-        if not success:
-            errors = []
-            for error in xml.xpath("OrderResponseHeader/Errors/Error"):
-                errors.append(dict((i.tag, i.text) for i in error))
-
-            # We only display the first error message here, but all of them
-            # will be available on the exception
-            raise SymantecError(
-                "There was an error changing the approver email: "
-                "'{0}'".format(errors[0]["ErrorMessage"]),
-                errors=errors,
-            )
+    def response_result(self, xml):
+        return
 
 
 class Reissue(BaseModel):
 
     _command = "Reissue"
 
-    def response(self, data):
-        xml = lxml.etree.fromstring(data)
-        success = (
-            int(xml.xpath("OrderResponseHeader/SuccessCode/text()")[0]) == 0
-        )
-
-        if success:
-            return {
-                "PartnerOrderID": xml.xpath(
-                    "OrderResponseHeader/PartnerOrderID/text()"
-                )[0],
-                "GeoTrustOrderID": xml.xpath("GeoTrustOrderID/text()")[0],
-            }
-        else:
-            errors = []
-            for error in xml.xpath("OrderResponseHeader/Errors/Error"):
-                errors.append(dict((i.tag, i.text) for i in error))
-
-            # We only display the first error message here, but all of them
-            # will be available on the exception
-            raise SymantecError(
-                "There was an error reissuing: "
-                "'{0}'".format(errors[0]["ErrorMessage"]),
-                errors=errors,
-            )
+    def response_result(self, xml):
+        return {
+            "PartnerOrderID": xml.xpath(
+                "OrderResponseHeader/PartnerOrderID/text()"
+            )[0],
+            "GeoTrustOrderID": xml.xpath("GeoTrustOrderID/text()")[0],
+        }
 
 
 class Revoke(BaseModel):
 
     _command = "Revoke"
 
-    def response(self, data):
-        xml = lxml.etree.fromstring(data)
-        success = (
-            int(xml.xpath("OrderResponseHeader/SuccessCode/text()")[0]) == 0
-        )
-
-        if success:
-            return {
-                "PartnerOrderID": xml.xpath(
-                    "OrderResponseHeader/PartnerOrderID/text()"
-                )[0],
-                "GeoTrustOrderID": xml.xpath("GeoTrustOrderID/text()")[0],
-                "SerialNumber": xml.xpath("SerialNumber/text()")[0],
-            }
-        else:
-            errors = []
-            for error in xml.xpath("OrderResponseHeader/Errors/Error"):
-                errors.append(dict((i.tag, i.text) for i in error))
-
-            # We only display the first error message here, but all of them
-            # will be available on the exception
-            raise SymantecError(
-                "There was an error with revocation: "
-                "'{0}'".format(errors[0]["ErrorMessage"]),
-                errors=errors,
-            )
+    def response_result(self, xml):
+        return {
+            "PartnerOrderID": xml.xpath(
+                "OrderResponseHeader/PartnerOrderID/text()"
+            )[0],
+            "GeoTrustOrderID": xml.xpath("GeoTrustOrderID/text()")[0],
+            "SerialNumber": xml.xpath("SerialNumber/text()")[0],
+        }
 
 
 class ModifyOperation(enum.Enum):
@@ -336,87 +209,35 @@ class ModifyOrder(BaseModel):
 
     _command = "ModifyOrder"
 
-    def response(self, data):
-        xml = lxml.etree.fromstring(data)
-        success = (
-            int(xml.xpath("OrderResponseHeader/SuccessCode/text()")[0]) == 0
-        )
-
-        if not success:
-            errors = []
-            for error in xml.xpath("OrderResponseHeader/Errors/Error"):
-                errors.append(dict((i.tag, i.text) for i in error))
-
-            # We only display the first error message here, but all of them
-            # will be available on the exception
-            raise SymantecError(
-                "There was an error modifying the order: "
-                "'{0}'".format(errors[0]["ErrorMessage"]),
-                errors=errors,
-            )
+    def response_result(self, xml):
+        return
 
 
 class ValidateOrderParameters(BaseModel):
 
     _command = "ValidateOrderParameters"
 
-    def response(self, data):
-        xml = lxml.etree.fromstring(data)
-        success = (
-            int(xml.xpath("OrderResponseHeader/SuccessCode/text()")[0]) == 0
-        )
+    def response_result(self, xml):
+        result = {}
+        for outer in xml.xpath("/ValidateOrderParameters/child::*"):
+            if outer.tag == "OrderResponseHeader":
+                continue
 
-        if success:
-            result = {}
-            for outer in xml.xpath("/ValidateOrderParameters/child::*"):
-                if outer.tag == "OrderResponseHeader":
-                    continue
-
-                if outer.xpath('count(child::*)') > 0:
-                    result[outer.tag] = dict((i.tag, i.text) for i in outer)
-                else:
-                    result[outer.tag] = outer.text
-            return result
-        else:
-            errors = []
-            for error in xml.xpath("OrderResponseHeader/Errors/Error"):
-                errors.append(dict((i.tag, i.text) for i in error))
-
-            # We only display the first error message here, but all of them
-            # will be available on the exception
-            raise SymantecError(
-                "There was an error validating the order parameters: "
-                "'{0}'".format(errors[0]["ErrorMessage"]),
-                errors=errors,
-            )
+            if outer.xpath('count(child::*)') > 0:
+                result[outer.tag] = dict((i.tag, i.text) for i in outer)
+            else:
+                result[outer.tag] = outer.text
+        return result
 
 
 class GetQuickApproverList(BaseModel):
 
     _command = "GetQuickApproverList"
 
-    def response(self, data):
-        xml = lxml.etree.fromstring(data)
-        success = (
-            int(xml.xpath("QueryResponseHeader/SuccessCode/text()")[0]) == 0
-        )
-
-        if success:
-            result = []
-            for approver in xml.xpath("ApproverList/Approver"):
-                result.append(dict(
-                    (i.tag, i.text) for i in approver
-                ))
-            return result
-        else:
-            errors = []
-            for error in xml.xpath("QueryResponseHeader/Errors/Error"):
-                errors.append(dict((i.tag, i.text) for i in error))
-
-            # We only display the first error message here, but all of them
-            # will be available on the exception
-            raise SymantecError(
-                "There was an error getting the approver list: "
-                "'{0}'".format(errors[0]["ErrorMessage"]),
-                errors=errors,
-            )
+    def response_result(self, xml):
+        result = []
+        for approver in xml.xpath("ApproverList/Approver"):
+            result.append(dict(
+                (i.tag, i.text) for i in approver
+            ))
+        return result

@@ -2,7 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 import enum
 
+import lxml
+
 from .datastructures import CaseInsensitiveDict
+from .exceptions import SymantecError
 
 
 class BaseModel(object):
@@ -61,8 +64,39 @@ class BaseModel(object):
         return data
 
     def response(self, data):
-        # TODO: Figure out if there is some common pattern that we can extract
-        #       from the various models so that they don't need to implement
-        #       their own response method, or at least they only have to
-        #       implement a subset.
+        xml = lxml.etree.fromstring(data)
+        success_code = int(xml.xpath(
+            "*[ "
+            "     substring(  name(),  string-length(name() ) - 13  ) "
+            "     = 'ResponseHeader' "
+            "]"
+            "/SuccessCode/text()"
+        )[0])
+
+        if success_code == 0:
+            return self.response_result(xml)
+        else:
+            return self.response_error(xml)
+
+    def response_error(self, xml):
+        errors = []
+        for error in xml.xpath(
+                "*[ "
+                "     substring(  name(),  string-length(name() ) - 13  ) "
+                "     = 'ResponseHeader' "
+                "]"
+                "/Errors/Error"):
+            errors.append(dict((i.tag, i.text) for i in error))
+
+        # We only display the first error message here, but all of them
+        # will be available on the exception
+        raise SymantecError(
+            "The Symantec API call {0} returned an error: '{1}'".format(
+                self.__class__.__name__,
+                errors[0]["ErrorMessage"],
+            ),
+            errors=errors,
+        )
+
+    def response_result(self, xml):
         raise NotImplementedError

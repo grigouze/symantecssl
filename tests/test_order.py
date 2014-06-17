@@ -47,7 +47,7 @@ def test_order_response_failure():
         Order().response(xml)
 
     assert exc_info.value.args == (
-        "There was an error submitting this SSL certificate: 'An Error!'",
+        "The Symantec API call Order returned an error: 'An Error!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error!"}]
 
@@ -140,7 +140,8 @@ def test_get_order_by_partner_order_id_response_failure():
         GetOrderByPartnerOrderID().response(xml).response(xml)
 
     assert exc_info.value.args == (
-        "There was an error getting the order details: 'An Error Message!'",
+        "The Symantec API call GetOrderByPartnerOrderID returned an error: "
+        "'An Error Message!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!"}]
 
@@ -245,7 +246,8 @@ def test_get_orders_by_date_range_response_failure():
         GetOrdersByDateRange().response(xml).response(xml)
 
     assert exc_info.value.args == (
-        "There was an error getting the order details: 'An Error Message!'",
+        "The Symantec API call GetOrdersByDateRange returned an error: "
+        "'An Error Message!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!"}]
 
@@ -374,7 +376,8 @@ def test_get_modified_orders_response_failure():
         GetModifiedOrders().response(xml).response(xml)
 
     assert exc_info.value.args == (
-        "There was an error getting the order details: 'An Error Message!'",
+        "The Symantec API call GetModifiedOrders returned an error: "
+        "'An Error Message!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!"}]
 
@@ -415,7 +418,8 @@ def test_change_approver_email_response_error():
         ChangeApproverEmail().response(xml).response(xml)
 
     assert exc_info.value.args == (
-        "There was an error changing the approver email: 'An Error Message!!'",
+        "The Symantec API call ChangeApproverEmail returned an error: "
+        "'An Error Message!!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!!"}]
 
@@ -460,7 +464,8 @@ def test_reissue_response_error():
         Reissue().response(xml).response(xml)
 
     assert exc_info.value.args == (
-        "There was an error reissuing: 'An Error Message!!'",
+        "The Symantec API call Reissue returned an error: "
+        "'An Error Message!!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!!"}]
 
@@ -504,7 +509,7 @@ def test_revoke_response_failure():
         Revoke().response(xml)
 
     assert exc_info.value.args == (
-        "There was an error with revocation: 'An Error!'",
+        "The Symantec API call Revoke returned an error: 'An Error!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error!"}]
 
@@ -545,7 +550,8 @@ def test_modify_order_response_error():
         ModifyOrder().response(xml).response(xml)
 
     assert exc_info.value.args == (
-        "There was an error modifying the order: 'An Error Message!!'",
+        "The Symantec API call ModifyOrder returned an error: "
+        "'An Error Message!!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!!"}]
 
@@ -637,7 +643,7 @@ def test_validate_order_parameters_error():
         ValidateOrderParameters().response(xml).response(xml)
 
     assert exc_info.value.args == (
-        "There was an error validating the order parameters: "
+        "The Symantec API call ValidateOrderParameters returned an error: "
         "'Validity period not valid'",
     )
     assert exc_info.value.errors == [{
@@ -703,6 +709,7 @@ def test_get_quick_approver_list_error():
         GetQuickApproverList().response(xml).response(xml)
 
     assert exc_info.value.args == (
-        "There was an error getting the approver list: 'An Error Message!!'",
+        "The Symantec API call GetQuickApproverList returned an error: "
+        "'An Error Message!!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!!"}]

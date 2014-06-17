@@ -55,7 +55,7 @@ class TestBaseModel:
             "responsetype": "XML",
         }
 
-    def test_response(self):
+    def test_response_result(self):
         m = BaseModel()
         with pytest.raises(NotImplementedError):
-            m.response(None)
+            m.response_result(None)
