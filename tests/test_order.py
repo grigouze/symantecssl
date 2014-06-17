@@ -5,7 +5,7 @@ import pytest
 from symantecssl.exceptions import SymantecError
 from symantecssl.order import(
     Order, GetOrderByPartnerOrderID, GetOrdersByDateRange,
-    GetModifiedOrders, ModifyOrder, ChangeApproverEmail, Reissue, Revoke
+    GetModifiedOrders, ModifyOrder, ChangeApproverEmail, Reissue, Revoke,
     GetQuickApproverList, ValidateOrderParameters
 )
 
