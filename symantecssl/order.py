@@ -4,6 +4,7 @@ import enum
 
 import lxml.etree
 
+from .utils import xml_to_dict
 from .exceptions import SymantecError
 from .models import BaseModel
 
@@ -139,10 +140,7 @@ class GetOrderByPartnerOrderID(BaseModel):
         )
 
         if success:
-            return dict(
-                (i.tag, i.text)
-                for i in xml.xpath("OrderDetail/OrderInfo/child::*")
-            )
+            return xml_to_dict(xml.xpath("OrderDetail")[0])
         else:
             errors = []
             for error in xml.xpath("QueryResponseHeader/Errors/Error"):
@@ -282,6 +280,38 @@ class Reissue(BaseModel):
             # will be available on the exception
             raise SymantecError(
                 "There was an error reissuing: "
+                "'{0}'".format(errors[0]["ErrorMessage"]),
+                errors=errors,
+            )
+
+
+class Revoke(BaseModel):
+
+    _command = "Revoke"
+
+    def response(self, data):
+        xml = lxml.etree.fromstring(data)
+        success = (
+            int(xml.xpath("OrderResponseHeader/SuccessCode/text()")[0]) == 0
+        )
+
+        if success:
+            return {
+                "PartnerOrderID": xml.xpath(
+                    "OrderResponseHeader/PartnerOrderID/text()"
+                )[0],
+                "GeoTrustOrderID": xml.xpath("GeoTrustOrderID/text()")[0],
+                "SerialNumber": xml.xpath("SerialNumber/text()")[0],
+            }
+        else:
+            errors = []
+            for error in xml.xpath("OrderResponseHeader/Errors/Error"):
+                errors.append(dict((i.tag, i.text) for i in error))
+
+            # We only display the first error message here, but all of them
+            # will be available on the exception
+            raise SymantecError(
+                "There was an error with revocation: "
                 "'{0}'".format(errors[0]["ErrorMessage"]),
                 errors=errors,
             )
