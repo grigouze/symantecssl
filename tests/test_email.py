@@ -42,6 +42,7 @@ def test_resend_email_response_error():
         ResendEmail().response(xml).response(xml)
 
     assert exc_info.value.args == (
-        "There was an error resending the email: 'An Error Message!!'",
+        "The Symantec API call ResendEmail returned an error: "
+        "'An Error Message!!'",
     )
     assert exc_info.value.errors == [{"ErrorMessage": "An Error Message!!"}]
