@@ -30,6 +30,15 @@ class Symantec(object):
         self.session = SymantecSession()
         self.session.auth = SymantecAuth(username, password)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
+    def close(self):
+        self.session.close()
+
     def submit(self, obj):
         resp = self.session.post(self.url, obj.serialize())
         resp.raise_for_status()

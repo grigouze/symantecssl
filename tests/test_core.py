@@ -54,6 +54,22 @@ class TestSymantec:
         assert obj.serialize.calls == [pretend.call()]
         assert obj.response.calls == [pretend.call(resp.content)]
 
+    def test_context_manager(self):
+        api = Symantec("user", "p@ssw0rd")
+        api.close = pretend.call_recorder(lambda: None)
+
+        with api as ctx_api:
+            assert ctx_api is api
+
+        assert api.close.calls == [pretend.call()]
+
+    def test_session_close(self):
+        api = Symantec("user", "p@ssw0rd")
+        api.session = pretend.stub(close=pretend.call_recorder(lambda: None))
+        api.close()
+
+        assert api.session.close.calls == [pretend.call()]
+
     @pytest.mark.parametrize(
         "method",
         [
