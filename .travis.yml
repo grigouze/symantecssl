@@ -2,6 +2,11 @@ language: python
 python: 3.4
 
 env:
+  global:
+    - secure: "D8D1qFbBOm0ZEowOAXuYnzI4s1rHMRiepJks6MyztcsxfmrW0KMG8iGFRm7MvKoIpwR/DKN8bEgDuQWnPQ2WERBX/oaP8oidqZ4QP6/Fm0cOlffqNqaLNN0IlbPbmFoQRs9pISotPip6e4jyaJezGH7Cf0NhYO+2ExTwWiTBdTo="
+    - secure: "DoVyyBrL0PFeP9GIevRUd0wKt2F5893TZ6SUgdRIS6NxpRIaqgqWvkYfSZs5AczaCS4tKw4ZotH5v5veS5ffI0S1pLTLgXoTMga8pi4g6xKTwVw2zs6rCBJdz1DaZrI0ZnnYinFpY98mVa/JfLmxosU/Bp24f5nWTvcqLuunJoQ="
+    - secure: "MM0Z07eqf2EGar++GaXytxhiBHuLbnTIGm8M59GSbUHBrFAGLe9+nP9/KEqCzMOuitzKEzYvml2NcmBsNwjIVJjlOM1ykLw8CdKVEmFaE2jr/4TLyl8MGNg4fO32SUIRVDXlCfVBCVt2/hMIxPfIMJs13XAa30NmtOqO1xPUZ7s="
+  matrix:
   - TOXENV=py26
   - TOXENV=py27
   - TOXENV=py32
@@ -19,4 +24,4 @@ script:
   - tox
 
 after_success:
-  coveralls
+  - coveralls
