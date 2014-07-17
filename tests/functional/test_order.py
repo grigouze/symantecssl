@@ -69,6 +69,42 @@ def test_order(symantec):
     assert order_data["PartnerOrderID"] == order_id
 
 
+def test_get_orders_by_date_range(symantec):
+    now = datetime.datetime.now()
+    date = now.strftime("%Y-%m-%d")
+    orderids = []
+    for _ in range(2):
+        orderids.append("".join(random.choice(string.ascii_letters)
+                        for _ in range(30)))
+
+    for order_id in orderids:
+        order_with_order_id(symantec, order_id)
+
+    order_list = symantec.get_orders_by_date_range(**{
+        "fromdate": date,
+        "todate": date,
+        "partnercode": symantec.partner_code
+    })
+
+    assert len(order_list) > 1
+    order_data = order_list.pop()
+    assert order_data["PartnerOrderID"]
+    assert order_data["OrderDate"]
+
+
+def test_get_order_by_partner_order_id(symantec):
+    order_id = "".join(random.choice(string.ascii_letters) for _ in range(30))
+
+    order_with_order_id(symantec, order_id)
+
+    order_data = symantec.get_order_by_partner_order_id(**{
+        "partnerorderid": order_id,
+        "partnercode": symantec.partner_code
+    })
+
+    assert order_data["OrderInfo"]["PartnerOrderID"] == order_id
+
+
 @pytest.fixture
 def order_kwargs():
     order_id = "".join(random.choice(string.ascii_letters) for _ in range(30))
