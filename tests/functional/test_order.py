@@ -13,7 +13,7 @@ from symantecssl.exceptions import SymantecError
 def order_with_order_id(symantec, order_id):
     return symantec.order(
         partnercode=symantec.partner_code,
-        productcode=ProductCode.SSL123,
+        productcode=ProductCode.QuickSSLPremium,
         partnerorderid=order_id,
         organizationname="MyOrg",
         addressline1="5000 Walzem",
@@ -80,11 +80,11 @@ def test_get_orders_by_date_range(symantec):
     for order_id in orderids:
         order_with_order_id(symantec, order_id)
 
-    order_list = symantec.get_orders_by_date_range(**{
-        "fromdate": date,
-        "todate": date,
-        "partnercode": symantec.partner_code
-    })
+    order_list = symantec.get_orders_by_date_range(
+        fromdate=date,
+        todate=date,
+        partnercode=symantec.partner_code
+    )
 
     assert len(order_list) > 1
     order_data = order_list.pop()
@@ -97,12 +97,32 @@ def test_get_order_by_partner_order_id(symantec):
 
     order_with_order_id(symantec, order_id)
 
-    order_data = symantec.get_order_by_partner_order_id(**{
-        "partnerorderid": order_id,
-        "partnercode": symantec.partner_code
-    })
+    order_data = symantec.get_order_by_partner_order_id(
+        partnerorderid=order_id,
+        partnercode=symantec.partner_code
+    )
 
     assert order_data["OrderInfo"]["PartnerOrderID"] == order_id
+
+
+def test_modify_order(symantec):
+    order_id = "".join(random.choice(string.ascii_letters) for _ in range(30))
+
+    order_with_order_id(symantec, order_id)
+
+    symantec.modify_order(
+        partnerorderid=order_id,
+        partnercode=symantec.partner_code,
+        productcode=ProductCode.SSL123,
+        modifyorderoperation=ModifyOperation.Cancel,
+    )
+
+    order_data = symantec.get_order_by_partner_order_id(
+        partnerorderid=order_id,
+        partnercode=symantec.partner_code,
+    )
+
+    assert order_data["OrderInfo"]["OrderStatusMajor"] == "CANCELLED"
 
 
 @pytest.fixture

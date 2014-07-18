@@ -194,7 +194,7 @@ class ModifyOperation(enum.Enum):
     Approve = "APPROVE"
     ApproveESSL = "APPROVE_ESSL"
     ResellerApprove = "RESELLER_APPROVE"
-    ResellerDisapprove = "REELLER_DISAPPROVE"
+    ResellerDisapprove = "RESELLER_DISAPPROVE"
     Reject = "REJECT"
     Cancel = "CANCEL"
     Deactivate = "DEACTIVATE"
