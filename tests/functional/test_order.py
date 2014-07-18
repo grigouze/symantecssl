@@ -60,15 +60,6 @@ def order_with_order_id(symantec, order_id):
     )
 
 
-def test_order(symantec):
-    order_id = "".join(random.choice(string.ascii_letters) for _ in range(30))
-
-    order_data = order_with_order_id(symantec, order_id)
-
-    assert set(order_data.keys()) == set(["GeoTrustOrderID", "PartnerOrderID"])
-    assert order_data["PartnerOrderID"] == order_id
-
-
 def test_get_orders_by_date_range(symantec):
     now = datetime.datetime.now()
     date = now.strftime("%Y-%m-%d")
@@ -130,6 +121,7 @@ def order_kwargs():
     order_id = "".join(random.choice(string.ascii_letters) for _ in range(30))
     return {
         "partnerorderid": order_id,
+        "productcode": ProductCode.QuickSSLPremium,
         "organizationname": "MyOrg",
         "addressline1": "5000 Walzem",
         "city": "San Antonio",
@@ -175,9 +167,18 @@ def order_kwargs():
     }
 
 
+def test_order(symantec, order_kwargs):
+    order_kwargs["partnercode"] = symantec.partner_code
+    order_id = order_kwargs["partnerorderid"]
+
+    order_data = symantec.order(**order_kwargs)
+
+    assert set(order_data.keys()) == set(["GeoTrustOrderID", "PartnerOrderID"])
+    assert order_data["PartnerOrderID"] == order_id
+
+
 def test_validate_order_parameters_success(symantec, order_kwargs):
     order_kwargs["partnercode"] = symantec.partner_code
-    order_kwargs["productcode"] = ProductCode.SSL123
 
     response = symantec.validate_order_parameters(**order_kwargs)
 
@@ -188,7 +189,6 @@ def test_validate_order_parameters_success(symantec, order_kwargs):
 
 def test_validate_order_parameters_error(symantec, order_kwargs):
     order_kwargs["partnercode"] = symantec.partner_code
-    order_kwargs["productcode"] = ProductCode.SSL123
     order_kwargs["webservertype"] = "9999"
 
     with pytest.raises(SymantecError) as e:
@@ -203,7 +203,7 @@ def test_reissue(symantec, order_kwargs):
     one_minute = 60
 
     order_kwargs["partnercode"] = symantec.partner_code
-    order_kwargs["productcode"] = product_code = ProductCode.SSL123
+    product_code = order_kwargs["productcode"]
     order_id = order_kwargs['partnerorderid']
 
     def query_order():
@@ -233,22 +233,22 @@ def test_reissue(symantec, order_kwargs):
         # to force the order to COMPLETED state.
         #
         # For SSL123, this takes up to 15 minutes or so.
-        # For QuickSSLPremium, this happens immediately but sends an email.
+        # For QuickSSLPremium and RapidSSL, this happens immediately.
         try:
             modify_order(ModifyOperation.Approve)
         except SymantecError:
             modify_order(ModifyOperation.PushState)
 
-        # wait until the order is finished; timeout after thirty minutes
+        # wait until the order is finished; timeout after five minutes
         start = time.time()
         while True:
             query_resp = query_order()
             order_status = query_resp["OrderInfo"]["OrderStatusMajor"].lower()
             if order_status == 'complete':
                 break
-            elif time.time() - start > 30 * one_minute:
+            elif time.time() - start > 5 * one_minute:
                 raise Exception("Order approval timed out")
-            time.sleep(one_minute)
+            time.sleep(10)
 
     symantec.order(**order_kwargs)
     ensure_order_completed()
