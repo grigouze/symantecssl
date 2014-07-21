@@ -104,7 +104,7 @@ def test_modify_order(symantec):
     symantec.modify_order(
         partnerorderid=order_id,
         partnercode=symantec.partner_code,
-        productcode=ProductCode.SSL123,
+        productcode=ProductCode.QuickSSLPremium,
         modifyorderoperation=ModifyOperation.Cancel,
     )
 
@@ -114,6 +114,49 @@ def test_modify_order(symantec):
     )
 
     assert order_data["OrderInfo"]["OrderStatusMajor"] == "CANCELLED"
+
+
+def test_get_modified_orders(symantec):
+    now = datetime.datetime.now()
+    date1 = now.strftime("%Y-%m-%d")
+    date2 = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+    orderids = []
+    for _ in range(2):
+        orderids.append("".join(random.choice(string.ascii_letters)
+                        for _ in range(30)))
+
+    for order_id in orderids:
+        order_with_order_id(symantec, order_id)
+
+    for order_id in orderids:
+        symantec.modify_order(
+            partnerorderid=order_id,
+            partnercode=symantec.partner_code,
+            productcode=ProductCode.QuickSSLPremium,
+            modifyorderoperation=ModifyOperation.Cancel,
+        )
+
+    order_list = symantec.get_modified_orders(
+        fromdate=date1,
+        todate=date2,
+        partnercode=symantec.partner_code
+    )
+
+    assert len(order_list) > 1
+    order_data = order_list.pop()
+    assert order_data["OrderInfo"]["PartnerOrderID"]
+    assert order_data["ModificationEvents"].pop()
+
+
+def test_get_quick_approver_list(symantec):
+    approver_list = symantec.get_quick_approver_list(
+        partnercode=symantec.partner_code,
+        domain="testingsymantecssl.com"
+    )
+
+    assert len(approver_list) > 0
+    for approver in approver_list:
+        assert set(approver.keys()) == set(["ApproverType", "ApproverEmail"])
 
 
 @pytest.fixture
