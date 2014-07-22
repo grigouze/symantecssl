@@ -36,7 +36,7 @@ def symantec():
     if not (username and password and partner_code):
         pytest.skip(
             "Cannot access Symantec API without username, password, and "
-            "parter code"
+            "partner code"
         )
 
     api = Symantec(username, password, url=api_url)
