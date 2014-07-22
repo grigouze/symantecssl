@@ -205,7 +205,7 @@ def order_kwargs():
         "admincontactcountry": "US",
         "techsameasadmin": "True",
         "billsameastech": "True",
-        "approveremail": "approver@example.com",
+        "approveremail": "administrator@example.com",
         "csr": textwrap.dedent("""
             -----BEGIN CERTIFICATE REQUEST-----
             MIICwjCCAaoCAQAwWTELMAkGA1UEBhMCVVMxDjAMBgNVBAgTBVRleGFzMRQwEgYD
