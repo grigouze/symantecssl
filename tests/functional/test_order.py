@@ -159,6 +159,24 @@ def test_get_quick_approver_list(symantec):
         assert set(approver.keys()) == set(["ApproverType", "ApproverEmail"])
 
 
+def test_change_approver_email(symantec):
+    order_id = "".join(random.choice(string.ascii_letters) for _ in range(30))
+    order_with_order_id(symantec, order_id)
+    symantec.change_approver_email(
+        partnercode=symantec.partner_code,
+        partnerorderid=order_id,
+        approveremail="administrator@testingsymantecssl.com"
+    )
+
+    new_email = symantec.get_order_by_partner_order_id(
+        partnerorderid=order_id,
+        partnercode=symantec.partner_code,
+        returnproductdetail=True
+    )["QuickOrderDetail"]["ApproverEmailAddress"]
+
+    assert new_email == "administrator@testingsymantecssl.com"
+
+
 @pytest.fixture
 def order_kwargs():
     order_id = "".join(random.choice(string.ascii_letters) for _ in range(30))
