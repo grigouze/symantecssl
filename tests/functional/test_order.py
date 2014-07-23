@@ -28,7 +28,7 @@ def order_with_order_id(symantec, order_id):
         admincontactfirstname="John",
         admincontactlastname="Doe",
         admincontactphone="2103122400",
-        admincontactemail="someone@email.com",
+        admincontactemail="admincontact@example.com",
         admincontacttitle="Caesar",
         admincontactaddressline1="123 Road",
         admincontactcity="San Antonio",
@@ -37,24 +37,24 @@ def order_with_order_id(symantec, order_id):
         admincontactcountry="US",
         techsameasadmin="True",
         billsameastech="True",
-        approveremail="admin@testingsymantecssl.com",
+        approveremail="admin@example.com",
         csr=textwrap.dedent("""
             -----BEGIN CERTIFICATE REQUEST-----
-            MIICpjCCAY4CAQAwYTELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAlRYMRQwEgYDVQQH
-            DAtTYW4gQW50b25pbzEOMAwGA1UECgwFTXlPcmcxHzAdBgNVBAMMFnRlc3Rpbmdz
-            eW1hbnRlY3NzbC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDf
-            klapgfE7MDlB++19m/I8TlzGJcIoiFUhqJN2TdCoiTPA+5eHkRRY9WWIS3R4xxQG
-            fA52dxynLRtce1Sr4zxeP5HkxtWKWbIdir2YVqnjWSoqyf0+8VNX4cYhCRu3BETu
-            Dfej5xjt7EH7++BoA5kGzcwv+7jb9U73XRREuZEq0l26QTd7EZjGZYATHJvz2idv
-            Z784+iGrO0Qw76rYHCnhffWDld9lgMKXcgRJpESIDQHRsPMJSREyWAOr0Fov/z75
-            YU3n4vXIFZSeSa7fGbyLFFXMNJpu4xG6x8JufgJkGZlgCEiX8aG6YjqV2Z3LrYld
-            4jzT408Uqyw2GftzZMDZAgMBAAGgADANBgkqhkiG9w0BAQUFAAOCAQEAPxIjS7g/
-            MUfNsRYuplgHh9BbZl13SVdFXc9POSJwSCy1pQhEhM+e7izGD3po+V0TlZ5DZohT
-            djrGMEZvBm4OkwB7g/9hzEI5kyHfBXzBVn9ybcIzEMlRqAWc0tS1Kn+EyyDlbGnh
-            iFEk178Q0KTuOIZfPVBKZjji0o5gj13wrRBAxJARf/0/MRqpg3mL932QgjmSB2dL
-            /57yk0hXh1ChA8d2htKdwb3RnRJHOjVxWbWjYGcuAMz7RTEN9pWviTM3y7FfTWTP
-            Q24Nrp12Ez1cALXb5t/lZkbrCtizCjUuEpREzIRMUYnWZEa7pw/CGbSTYH4a2x7n
-            L5mReDt1ijwjGg==
+            MIICwjCCAaoCAQAwWTELMAkGA1UEBhMCVVMxDjAMBgNVBAgTBVRleGFzMRQwEgYD
+            VQQHEwtTYW4gQW50b25pbzEOMAwGA1UEChMFTXlPcmcxFDASBgNVBAMTC2V4YW1w
+            bGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0rJys+HbQuOH
+            1ONUSrA2N6VTjinRLbtwZ3ylR/Q7Xba+lfEtS1joGG/sySTdT/AxMHg72e4xBIw9
+            8VOVhSanb8qzdLUXevA/BnxVVS6OqXVXsSXhcsCvE7A6lgsDqPOJcwIJlUpjSHgj
+            hops4sIUO+oZFAB9cY+ET+E7AdayT2GcE+Zk4LuoY5UWqBegJ3DvK14uEdvg+ONm
+            AfFdwY8DH/MXiQXP99ARP1/J7Jh6cDBjil0faEVJDRBO64HTgOCGdWU9Uou6ugov
+            nKsN1JS4+vvCyuexzNZrAZgFX7mL4TCvVtCOmL1bBJ/g4AXNqHaBECjHKyN/auIQ
+            F3iT4u/XjQIDAQABoCQwIgYJKoZIhvcNAQkOMRUwEzARBglghkgBhvhCAQEEBAMC
+            BkAwDQYJKoZIhvcNAQEFBQADggEBAGz2cvYacjgFwLNO7Iy6ga5nvTNwHg8X+gGD
+            HAyqzM7thxoAr8U2D285KK14tlfsWuG/J2NbgV8uItPPkPlb3W3w3IHLfzjRMSXg
+            0n6v+u/13E3rg5A6Q1bKLHY/Tp7Nd3bPB3JzQ0DQEOaznvUKadAl1oc5EGCx7S9w
+            5bwYdeFYaVfh6iUCAwu68rv6nluLbtqbGrqAStMeoH3UbfLIJX1woNxa4qImvJ3b
+            +dlJH6W/Rsour4OY5VffllA4F43CV4Ob3t5fd9tnMTy2X8uCGZbngxAMrR//JyXb
+            KCbp2ufNNMANWpF2SdZ4EvhjbFUQ07eOu5RyUUVseTEwMvbtPRA=
             -----END CERTIFICATE REQUEST-----
         """)
     )
@@ -165,7 +165,7 @@ def test_change_approver_email(symantec):
     symantec.change_approver_email(
         partnercode=symantec.partner_code,
         partnerorderid=order_id,
-        approveremail="administrator@testingsymantecssl.com"
+        approveremail="approver@example.com"
     )
 
     new_email = symantec.get_order_by_partner_order_id(
@@ -174,7 +174,7 @@ def test_change_approver_email(symantec):
         returnproductdetail=True
     )["QuickOrderDetail"]["ApproverEmailAddress"]
 
-    assert new_email == "administrator@testingsymantecssl.com"
+    assert new_email == "approver@example.com"
 
 
 @pytest.fixture
@@ -196,7 +196,7 @@ def order_kwargs():
         "admincontactfirstname": "John",
         "admincontactlastname": "Doe",
         "admincontactphone": "2103122400",
-        "admincontactemail": "someone@email.com",
+        "admincontactemail": "admincontact@example.com",
         "admincontacttitle": "Caesar",
         "admincontactaddressline1": "123 Road",
         "admincontactcity": "San Antonio",
@@ -205,24 +205,24 @@ def order_kwargs():
         "admincontactcountry": "US",
         "techsameasadmin": "True",
         "billsameastech": "True",
-        "approveremail": "admin@testingsymantecssl.com",
+        "approveremail": "administrator@example.com",
         "csr": textwrap.dedent("""
             -----BEGIN CERTIFICATE REQUEST-----
-            MIICpjCCAY4CAQAwYTELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAlRYMRQwEgYDVQQH
-            DAtTYW4gQW50b25pbzEOMAwGA1UECgwFTXlPcmcxHzAdBgNVBAMMFnRlc3Rpbmdz
-            eW1hbnRlY3NzbC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDf
-            klapgfE7MDlB++19m/I8TlzGJcIoiFUhqJN2TdCoiTPA+5eHkRRY9WWIS3R4xxQG
-            fA52dxynLRtce1Sr4zxeP5HkxtWKWbIdir2YVqnjWSoqyf0+8VNX4cYhCRu3BETu
-            Dfej5xjt7EH7++BoA5kGzcwv+7jb9U73XRREuZEq0l26QTd7EZjGZYATHJvz2idv
-            Z784+iGrO0Qw76rYHCnhffWDld9lgMKXcgRJpESIDQHRsPMJSREyWAOr0Fov/z75
-            YU3n4vXIFZSeSa7fGbyLFFXMNJpu4xG6x8JufgJkGZlgCEiX8aG6YjqV2Z3LrYld
-            4jzT408Uqyw2GftzZMDZAgMBAAGgADANBgkqhkiG9w0BAQUFAAOCAQEAPxIjS7g/
-            MUfNsRYuplgHh9BbZl13SVdFXc9POSJwSCy1pQhEhM+e7izGD3po+V0TlZ5DZohT
-            djrGMEZvBm4OkwB7g/9hzEI5kyHfBXzBVn9ybcIzEMlRqAWc0tS1Kn+EyyDlbGnh
-            iFEk178Q0KTuOIZfPVBKZjji0o5gj13wrRBAxJARf/0/MRqpg3mL932QgjmSB2dL
-            /57yk0hXh1ChA8d2htKdwb3RnRJHOjVxWbWjYGcuAMz7RTEN9pWviTM3y7FfTWTP
-            Q24Nrp12Ez1cALXb5t/lZkbrCtizCjUuEpREzIRMUYnWZEa7pw/CGbSTYH4a2x7n
-            L5mReDt1ijwjGg==
+            MIICwjCCAaoCAQAwWTELMAkGA1UEBhMCVVMxDjAMBgNVBAgTBVRleGFzMRQwEgYD
+            VQQHEwtTYW4gQW50b25pbzEOMAwGA1UEChMFTXlPcmcxFDASBgNVBAMTC2V4YW1w
+            bGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0rJys+HbQuOH
+            1ONUSrA2N6VTjinRLbtwZ3ylR/Q7Xba+lfEtS1joGG/sySTdT/AxMHg72e4xBIw9
+            8VOVhSanb8qzdLUXevA/BnxVVS6OqXVXsSXhcsCvE7A6lgsDqPOJcwIJlUpjSHgj
+            hops4sIUO+oZFAB9cY+ET+E7AdayT2GcE+Zk4LuoY5UWqBegJ3DvK14uEdvg+ONm
+            AfFdwY8DH/MXiQXP99ARP1/J7Jh6cDBjil0faEVJDRBO64HTgOCGdWU9Uou6ugov
+            nKsN1JS4+vvCyuexzNZrAZgFX7mL4TCvVtCOmL1bBJ/g4AXNqHaBECjHKyN/auIQ
+            F3iT4u/XjQIDAQABoCQwIgYJKoZIhvcNAQkOMRUwEzARBglghkgBhvhCAQEEBAMC
+            BkAwDQYJKoZIhvcNAQEFBQADggEBAGz2cvYacjgFwLNO7Iy6ga5nvTNwHg8X+gGD
+            HAyqzM7thxoAr8U2D285KK14tlfsWuG/J2NbgV8uItPPkPlb3W3w3IHLfzjRMSXg
+            0n6v+u/13E3rg5A6Q1bKLHY/Tp7Nd3bPB3JzQ0DQEOaznvUKadAl1oc5EGCx7S9w
+            5bwYdeFYaVfh6iUCAwu68rv6nluLbtqbGrqAStMeoH3UbfLIJX1woNxa4qImvJ3b
+            +dlJH6W/Rsour4OY5VffllA4F43CV4Ob3t5fd9tnMTy2X8uCGZbngxAMrR//JyXb
+            KCbp2ufNNMANWpF2SdZ4EvhjbFUQ07eOu5RyUUVseTEwMvbtPRA=
             -----END CERTIFICATE REQUEST-----
         """),
     }
