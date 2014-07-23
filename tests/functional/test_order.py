@@ -165,7 +165,7 @@ def test_change_approver_email(symantec):
     symantec.change_approver_email(
         partnercode=symantec.partner_code,
         partnerorderid=order_id,
-        approveremail="approver@example.com"
+        approveremail="administrator@example.com"
     )
 
     new_email = symantec.get_order_by_partner_order_id(
@@ -174,7 +174,7 @@ def test_change_approver_email(symantec):
         returnproductdetail=True
     )["QuickOrderDetail"]["ApproverEmailAddress"]
 
-    assert new_email == "approver@example.com"
+    assert new_email == "administrator@example.com"
 
 
 @pytest.fixture
