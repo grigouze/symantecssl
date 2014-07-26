@@ -2,12 +2,44 @@ import datetime
 import pytest
 import random
 import string
-import textwrap
+import subprocess
 import time
 
 from symantecssl.order import ModifyOperation
 from symantecssl.order import ProductCode
 from symantecssl.exceptions import SymantecError
+
+try:
+    from subprocess import check_output
+except ImportError:
+    def check_output(*popenargs, **kwargs):
+        if 'stdout' in kwargs:
+            raise ValueError(
+                'stdout argument not allowed, it will be overridden.'
+            )
+        process = subprocess.Popen(
+            stdout=subprocess.PIPE,
+            *popenargs,
+            **kwargs
+        )
+        output, unused_err = process.communicate()
+        retcode = process.poll()
+        if retcode:
+            cmd = kwargs.get("args")
+            if cmd is None:
+                cmd = popenargs[0]
+            raise subprocess.CalledProcessError(retcode, cmd, output=output)
+        return output
+
+
+def create_csr():
+    return b"".join(
+        check_output([
+            "openssl", "req", "-new", "-newkey", "rsa:2048", "-nodes",
+            "-keyout", "/dev/null", "-text", "-batch", "-subj",
+            "/C=US/ST=Texas/L=San Antonio/O=MyOrg/CN=example.com",
+        ]).partition(b"-----BEGIN CERTIFICATE REQUEST-----")[1:]
+    )
 
 
 def order_with_order_id(symantec, order_id):
@@ -38,26 +70,41 @@ def order_with_order_id(symantec, order_id):
         techsameasadmin="True",
         billsameastech="True",
         approveremail="admin@example.com",
-        csr=textwrap.dedent("""
-            -----BEGIN CERTIFICATE REQUEST-----
-            MIICwjCCAaoCAQAwWTELMAkGA1UEBhMCVVMxDjAMBgNVBAgTBVRleGFzMRQwEgYD
-            VQQHEwtTYW4gQW50b25pbzEOMAwGA1UEChMFTXlPcmcxFDASBgNVBAMTC2V4YW1w
-            bGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0rJys+HbQuOH
-            1ONUSrA2N6VTjinRLbtwZ3ylR/Q7Xba+lfEtS1joGG/sySTdT/AxMHg72e4xBIw9
-            8VOVhSanb8qzdLUXevA/BnxVVS6OqXVXsSXhcsCvE7A6lgsDqPOJcwIJlUpjSHgj
-            hops4sIUO+oZFAB9cY+ET+E7AdayT2GcE+Zk4LuoY5UWqBegJ3DvK14uEdvg+ONm
-            AfFdwY8DH/MXiQXP99ARP1/J7Jh6cDBjil0faEVJDRBO64HTgOCGdWU9Uou6ugov
-            nKsN1JS4+vvCyuexzNZrAZgFX7mL4TCvVtCOmL1bBJ/g4AXNqHaBECjHKyN/auIQ
-            F3iT4u/XjQIDAQABoCQwIgYJKoZIhvcNAQkOMRUwEzARBglghkgBhvhCAQEEBAMC
-            BkAwDQYJKoZIhvcNAQEFBQADggEBAGz2cvYacjgFwLNO7Iy6ga5nvTNwHg8X+gGD
-            HAyqzM7thxoAr8U2D285KK14tlfsWuG/J2NbgV8uItPPkPlb3W3w3IHLfzjRMSXg
-            0n6v+u/13E3rg5A6Q1bKLHY/Tp7Nd3bPB3JzQ0DQEOaznvUKadAl1oc5EGCx7S9w
-            5bwYdeFYaVfh6iUCAwu68rv6nluLbtqbGrqAStMeoH3UbfLIJX1woNxa4qImvJ3b
-            +dlJH6W/Rsour4OY5VffllA4F43CV4Ob3t5fd9tnMTy2X8uCGZbngxAMrR//JyXb
-            KCbp2ufNNMANWpF2SdZ4EvhjbFUQ07eOu5RyUUVseTEwMvbtPRA=
-            -----END CERTIFICATE REQUEST-----
-        """)
+        csr=create_csr(),
     )
+
+
+@pytest.fixture
+def order_kwargs():
+    order_id = "".join(random.choice(string.ascii_letters) for _ in range(30))
+    return {
+        "partnerorderid": order_id,
+        "productcode": ProductCode.QuickSSLPremium,
+        "organizationname": "MyOrg",
+        "addressline1": "5000 Walzem",
+        "city": "San Antonio",
+        "region": "TX",
+        "postalcode": "78218",
+        "country": "US",
+        "organizationphone": "2103124000",
+        "validityperiod": "12",
+        "serverCount": "1",
+        "webservertype": "20",
+        "admincontactfirstname": "John",
+        "admincontactlastname": "Doe",
+        "admincontactphone": "2103122400",
+        "admincontactemail": "admincontact@example.com",
+        "admincontacttitle": "Caesar",
+        "admincontactaddressline1": "123 Road",
+        "admincontactcity": "San Antonio",
+        "admincontactregion": "TX",
+        "admincontactpostalcode": "78218",
+        "admincontactcountry": "US",
+        "techsameasadmin": "True",
+        "billsameastech": "True",
+        "approveremail": "administrator@example.com",
+        "csr": create_csr(),
+    }
 
 
 def test_get_orders_by_date_range(symantec):
@@ -175,57 +222,6 @@ def test_change_approver_email(symantec):
     )["QuickOrderDetail"]["ApproverEmailAddress"]
 
     assert new_email == "administrator@example.com"
-
-
-@pytest.fixture
-def order_kwargs():
-    order_id = "".join(random.choice(string.ascii_letters) for _ in range(30))
-    return {
-        "partnerorderid": order_id,
-        "productcode": ProductCode.QuickSSLPremium,
-        "organizationname": "MyOrg",
-        "addressline1": "5000 Walzem",
-        "city": "San Antonio",
-        "region": "TX",
-        "postalcode": "78218",
-        "country": "US",
-        "organizationphone": "2103124000",
-        "validityperiod": "12",
-        "serverCount": "1",
-        "webservertype": "20",
-        "admincontactfirstname": "John",
-        "admincontactlastname": "Doe",
-        "admincontactphone": "2103122400",
-        "admincontactemail": "admincontact@example.com",
-        "admincontacttitle": "Caesar",
-        "admincontactaddressline1": "123 Road",
-        "admincontactcity": "San Antonio",
-        "admincontactregion": "TX",
-        "admincontactpostalcode": "78218",
-        "admincontactcountry": "US",
-        "techsameasadmin": "True",
-        "billsameastech": "True",
-        "approveremail": "administrator@example.com",
-        "csr": textwrap.dedent("""
-            -----BEGIN CERTIFICATE REQUEST-----
-            MIICwjCCAaoCAQAwWTELMAkGA1UEBhMCVVMxDjAMBgNVBAgTBVRleGFzMRQwEgYD
-            VQQHEwtTYW4gQW50b25pbzEOMAwGA1UEChMFTXlPcmcxFDASBgNVBAMTC2V4YW1w
-            bGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0rJys+HbQuOH
-            1ONUSrA2N6VTjinRLbtwZ3ylR/Q7Xba+lfEtS1joGG/sySTdT/AxMHg72e4xBIw9
-            8VOVhSanb8qzdLUXevA/BnxVVS6OqXVXsSXhcsCvE7A6lgsDqPOJcwIJlUpjSHgj
-            hops4sIUO+oZFAB9cY+ET+E7AdayT2GcE+Zk4LuoY5UWqBegJ3DvK14uEdvg+ONm
-            AfFdwY8DH/MXiQXP99ARP1/J7Jh6cDBjil0faEVJDRBO64HTgOCGdWU9Uou6ugov
-            nKsN1JS4+vvCyuexzNZrAZgFX7mL4TCvVtCOmL1bBJ/g4AXNqHaBECjHKyN/auIQ
-            F3iT4u/XjQIDAQABoCQwIgYJKoZIhvcNAQkOMRUwEzARBglghkgBhvhCAQEEBAMC
-            BkAwDQYJKoZIhvcNAQEFBQADggEBAGz2cvYacjgFwLNO7Iy6ga5nvTNwHg8X+gGD
-            HAyqzM7thxoAr8U2D285KK14tlfsWuG/J2NbgV8uItPPkPlb3W3w3IHLfzjRMSXg
-            0n6v+u/13E3rg5A6Q1bKLHY/Tp7Nd3bPB3JzQ0DQEOaznvUKadAl1oc5EGCx7S9w
-            5bwYdeFYaVfh6iUCAwu68rv6nluLbtqbGrqAStMeoH3UbfLIJX1woNxa4qImvJ3b
-            +dlJH6W/Rsour4OY5VffllA4F43CV4Ob3t5fd9tnMTy2X8uCGZbngxAMrR//JyXb
-            KCbp2ufNNMANWpF2SdZ4EvhjbFUQ07eOu5RyUUVseTEwMvbtPRA=
-            -----END CERTIFICATE REQUEST-----
-        """),
-    }
 
 
 def test_order(symantec, order_kwargs):
