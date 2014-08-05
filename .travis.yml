@@ -18,7 +18,7 @@ env:
   - TOXENV=docs
 
 install:
-  - "if [[ $TRAVIS_SECURE_ENV_VARS == 'true' ]]; then export SYMANTEC_RECORD_MODE=off; fi"
+  - "if [[ $TRAVIS_SECURE_ENV_VARS == 'true' ]]; then export SYMANTEC_NO_BETAMAX=1; fi"
   - pip install tox coveralls
 
 script:

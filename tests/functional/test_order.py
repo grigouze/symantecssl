@@ -112,7 +112,7 @@ def order_kwargs():
     }
 
 
-def test_get_orders_by_date_range(symantec, vcr, placeholders):
+def test_get_orders_by_date_range(symantec, vcr):
     now = datetime.datetime.now()
     date = now.strftime("%Y-%m-%d")
     orderids = []
@@ -124,8 +124,6 @@ def test_get_orders_by_date_range(symantec, vcr, placeholders):
 
     with vcr.use_cassette(
         placeholders=(
-            placeholders
-            +
             [{"placeholder": "<<CSR{0}>>".format(i), "replace": csr}
              for i, csr in enumerate(csrs)]
             +
@@ -150,14 +148,12 @@ def test_get_orders_by_date_range(symantec, vcr, placeholders):
     assert order_data["OrderDate"]
 
 
-def test_get_order_by_partner_order_id(symantec, vcr, placeholders):
+def test_get_order_by_partner_order_id(symantec, vcr):
     order_id = "".join(random.choice(string.ascii_letters) for _ in range(30))
     csr = create_csr()
 
     with vcr.use_cassette(
         placeholders=(
-            placeholders
-            +
             [
                 {"placeholder": "<<CSR>>", "replace": csr},
                 {"placeholder": "<<CSR_QUOTED>>", "replace": quote_plus(csr)},
@@ -173,14 +169,12 @@ def test_get_order_by_partner_order_id(symantec, vcr, placeholders):
     assert order_data["OrderInfo"]["PartnerOrderID"] == order_id
 
 
-def test_modify_order(symantec, vcr, placeholders):
+def test_modify_order(symantec, vcr):
     order_id = "".join(random.choice(string.ascii_letters) for _ in range(30))
     csr = create_csr()
 
     with vcr.use_cassette(
         placeholders=(
-            placeholders
-            +
             [
                 {"placeholder": "<<CSR>>", "replace": csr},
                 {"placeholder": "<<CSR_QUOTED>>", "replace": quote_plus(csr)},
@@ -203,7 +197,7 @@ def test_modify_order(symantec, vcr, placeholders):
     assert order_data["OrderInfo"]["OrderStatusMajor"] == "CANCELLED"
 
 
-def test_get_modified_orders(symantec, vcr, placeholders):
+def test_get_modified_orders(symantec, vcr):
     now = datetime.datetime.now()
     date1 = now.strftime("%Y-%m-%d")
     date2 = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
@@ -216,8 +210,6 @@ def test_get_modified_orders(symantec, vcr, placeholders):
 
     with vcr.use_cassette(
         placeholders=(
-            placeholders
-            +
             [{"placeholder": "<<CSR{0}>>".format(i), "replace": csr}
              for i, csr in enumerate(csrs)]
             +
@@ -262,14 +254,12 @@ def test_get_quick_approver_list(symantec, vcr):
         assert set(approver.keys()) == set(["ApproverType", "ApproverEmail"])
 
 
-def test_change_approver_email(symantec, vcr, placeholders):
+def test_change_approver_email(symantec, vcr):
     order_id = "".join(random.choice(string.ascii_letters) for _ in range(30))
     csr = create_csr()
 
     with vcr.use_cassette(
         placeholders=(
-            placeholders
-            +
             [
                 {"placeholder": "<<CSR>>", "replace": csr},
                 {"placeholder": "<<CSR_QUOTED>>", "replace": quote_plus(csr)},
@@ -291,15 +281,13 @@ def test_change_approver_email(symantec, vcr, placeholders):
     assert new_email == "administrator@example.com"
 
 
-def test_order_call(symantec, order_kwargs, vcr, placeholders):
+def test_order_call(symantec, order_kwargs, vcr):
     order_kwargs["partnercode"] = symantec.partner_code
     order_id = order_kwargs["partnerorderid"]
     csr = order_kwargs["csr"]
 
     with vcr.use_cassette(
         placeholders=(
-            placeholders
-            +
             [
                 {"placeholder": "<<CSR>>", "replace": csr},
                 {"placeholder": "<<CSR_QUOTED>>", "replace": quote_plus(csr)},
@@ -312,15 +300,13 @@ def test_order_call(symantec, order_kwargs, vcr, placeholders):
 
 
 def test_validate_order_parameters_success(
-        symantec, order_kwargs, vcr, placeholders):
+        symantec, order_kwargs, vcr):
     order_kwargs["partnercode"] = symantec.partner_code
     order_id = order_kwargs["partnerorderid"]
     csr = order_kwargs["csr"]
 
     with vcr.use_cassette(
         placeholders=(
-            placeholders
-            +
             [
                 {"placeholder": "<<CSR>>", "replace": csr},
                 {"placeholder": "<<CSR_QUOTED>>", "replace": quote_plus(csr)},
@@ -333,8 +319,7 @@ def test_validate_order_parameters_success(
     assert set(response.keys()) == set(expected_keys)
 
 
-def test_validate_order_parameters_error(
-        symantec, order_kwargs, vcr, placeholders):
+def test_validate_order_parameters_error(symantec, order_kwargs, vcr):
     order_kwargs["partnercode"] = symantec.partner_code
     order_kwargs["webservertype"] = "9999"
 
@@ -343,8 +328,6 @@ def test_validate_order_parameters_error(
 
     with vcr.use_cassette(
         placeholders=(
-            placeholders
-            +
             [
                 {"placeholder": "<<CSR>>", "replace": csr},
                 {"placeholder": "<<CSR_QUOTED>>", "replace": quote_plus(csr)},
@@ -358,7 +341,7 @@ def test_validate_order_parameters_error(
                            "  WebServerType'")
 
 
-def test_reissue(symantec, order_kwargs, vcr, placeholders):
+def test_reissue(symantec, order_kwargs, vcr):
     one_minute = 60
 
     order_kwargs["partnercode"] = symantec.partner_code
@@ -412,8 +395,6 @@ def test_reissue(symantec, order_kwargs, vcr, placeholders):
 
     with vcr.use_cassette(
         placeholders=(
-            placeholders
-            +
             [
                 {"placeholder": "<<CSR>>", "replace": csr},
                 {"placeholder": "<<CSR_QUOTED>>", "replace": quote_plus(csr)},
