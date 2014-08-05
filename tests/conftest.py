@@ -31,8 +31,7 @@ def pytest_collection_modifyitems(items):
             )
 
 
-@pytest.fixture(scope="session")
-def placeholders():
+def get_placeholders():
     username = os.environ.get("SYMANTEC_USER", "X" * 30)
     password = os.environ.get("SYMANTEC_PASSWORD", "X" * 30)
     partner_code = os.environ.get("SYMANTEC_PARTNER_CODE", "X" * 30)
@@ -69,7 +68,7 @@ betamax.Betamax.register_request_matcher(FormEncodeMatcher)
 
 
 @pytest.fixture(scope="session")
-def _betamax_configure(placeholders):
+def _betamax_configure():
     username = os.environ.get("SYMANTEC_USER")
     password = os.environ.get("SYMANTEC_PASSWORD")
     partner_code = os.environ.get("SYMANTEC_PARTNER_CODE")
@@ -79,9 +78,8 @@ def _betamax_configure(placeholders):
         os.path.dirname(os.path.abspath(__file__)),
         "cassettes",
     )
-    config.default_cassette_options["record_mode"] = os.environ.get(
-        "SYMANTEC_RECORD_MODE",
-        "none" if not (username and password and partner_code) else "all",
+    config.default_cassette_options["record_mode"] = (
+        "none" if not (username and password and partner_code) else "all"
     )
     config.default_cassette_options["match_requests_on"] = [
         "form-body",
@@ -89,7 +87,7 @@ def _betamax_configure(placeholders):
         "uri",
     ]
 
-    for placeholder in placeholders:
+    for placeholder in get_placeholders():
         config.define_cassette_placeholder(
             placeholder["placeholder"],
             placeholder["replace"],
@@ -98,20 +96,44 @@ def _betamax_configure(placeholders):
 
 class VCR(object):
 
-    def __init__(self, cassette_name):
+    def __init__(self, cassette_name, default_placeholders=None):
         self.betamax = None
         self.__cassette = cassette_name
+        self.__placeholders = (
+            default_placeholders if default_placeholders is not None else []
+        )
 
     def __getattr__(self, name):
         return getattr(self.betamax, name)
 
     def use_cassette(self, **kwargs):
+        placeholders = kwargs.pop("placeholders", [])
+        placeholders = self.__placeholders + placeholders
+        kwargs["placeholders"] = placeholders
         return self.betamax.use_cassette(self.__cassette, **kwargs)
+
+
+class NoVCR(object):
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        pass
+
+    def use_cassette(self, **kwargs):
+        return self
 
 
 @pytest.fixture
 def vcr(request, _betamax_configure):
-    return VCR(request.node.name)
+    if "SYMANTEC_NO_BETAMAX" in os.environ:
+        return NoVCR()
+    else:
+        return VCR(
+            request.node.name,
+            default_placeholders=get_placeholders(),
+        )
 
 
 @pytest.fixture
