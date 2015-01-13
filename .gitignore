@@ -4,6 +4,7 @@
 
 .tox/
 .cache/
+.idea/
 .coverage
 
 __pycache__/
