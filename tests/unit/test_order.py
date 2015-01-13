@@ -1,9 +1,9 @@
 from mock import patch
 
+import pytest
+
 from symantecssl.order import FailedRequest, post_request
 from symantecssl.models import GetModifiedOrderRequest, OrderDetails
-
-import pytest
 
 
 class TestPostRequest(object):

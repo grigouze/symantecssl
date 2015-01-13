@@ -1,12 +1,13 @@
+import datetime
+
+from lxml import etree
+
 from symantecssl.models import (
     ContactInfo, Certificate, CertificateInfo, GetModifiedOrderRequest,
     IntermediateCertificate, ModificationEvent, ModificationEvents,
     OrderContacts, OrganizationInfo, OrderDetail, OrderDetails,
     OrderQueryOptions, QueryRequestHeader, RequestEnvelope, get_element_text
 )
-from lxml import etree
-
-import datetime
 
 
 class TestOrganizationInfo(object):
