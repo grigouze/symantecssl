@@ -15,7 +15,7 @@ class TestOrganizationInfo(object):
     def test_deserialize(self):
 
         xml_node = etree.fromstring(
-            """<?xml version="1.0" encoding="UTF-8"?>
+            b"""<?xml version="1.0" encoding="UTF-8"?>
 <m:OrganizationInfo xmlns:m="http://api.geotrust.com/webtrust/query">
     <m:OrganizationName>MyOrg</m:OrganizationName>
     <m:OrganizationAddress>
@@ -39,7 +39,7 @@ class TestOrderContacts(object):
     def test_deserialize(self):
 
         xml_node = etree.fromstring(
-            """<?xml version="1.0" encoding="UTF-8"?>
+            b"""<?xml version="1.0" encoding="UTF-8"?>
 <m:OrderContacts xmlns:m="http://api.geotrust.com/webtrust/query">
     <m:AdminContact>
         <m:FirstName>John</m:FirstName>
@@ -77,7 +77,7 @@ class TestContactInfo(object):
     def test_deserialize(self):
 
         xml_node = etree.fromstring(
-            """<?xml version="1.0" encoding="UTF-8"?>
+            b"""<?xml version="1.0" encoding="UTF-8"?>
     <m:AdminContact xmlns:m="http://api.geotrust.com/webtrust/query">
         <m:FirstName>John</m:FirstName>
         <m:LastName>Doe</m:LastName>
@@ -100,7 +100,7 @@ class TestCertificateInfo(object):
 
     def test_deserialize(self):
         xml_node = etree.fromstring(
-            """<?xml version="1.0" encoding="UTF-8"?>
+            b"""<?xml version="1.0" encoding="UTF-8"?>
 <m:CertificateInfo xmlns:m="http://api.geotrust.com/webtrust/query">
 <m:CertificateStatus>ACTIVE</m:CertificateStatus>
 <m:StartDate>2014-11-20T12:48:39+00:00</m:StartDate>
@@ -129,7 +129,7 @@ class TestCertificate(object):
 
     def test_deserialize(self):
         xml_node = etree.fromstring(
-            """<?xml version="1.0" encoding="UTF-8"?>
+            b"""<?xml version="1.0" encoding="UTF-8"?>
 <m:Fulfillment xmlns:m="http://api.geotrust.com/webtrust/query">
 <m:CACertificates>
 <m:CACertificate>
@@ -166,7 +166,7 @@ class TestIntermediateCertificate(object):
 
     def test_deserialize(self):
         xml_node = etree.fromstring(
-            """<?xml version="1.0" encoding="UTF-8"?>
+            b"""<?xml version="1.0" encoding="UTF-8"?>
 <m:CACertificate xmlns:m="http://api.geotrust.com/webtrust/query">
 <m:Type>INTERMEDIATE</m:Type>
 <m:CACert>-----BEGIN CERTIFICATE-----
@@ -187,7 +187,7 @@ class TestModificationEvents(object):
 
     def test_deserialize(self):
         xml_node = etree.fromstring(
-            """<?xml version="1.0" encoding="UTF-8"?>
+            b"""<?xml version="1.0" encoding="UTF-8"?>
 <m:ModificationEvents xmlns:m="http://api.geotrust.com/webtrust/query">
 <m:ModificationEvent>
 <m:ModificationEventID>21612526</m:ModificationEventID>
@@ -210,7 +210,7 @@ class TestModificationEvent(object):
 
     def test_deserialize(self):
         xml_node = etree.fromstring(
-            """<?xml version="1.0" encoding="UTF-8"?>
+            b"""<?xml version="1.0" encoding="UTF-8"?>
 <m:ModificationEvent xmlns:m="http://api.geotrust.com/webtrust/query">
 <m:ModificationEventID>21612526</m:ModificationEventID>
 <m:ModificationEventName>Order Created</m:ModificationEventName>
@@ -228,7 +228,7 @@ class TestOrderDetail(object):
 
     def test_deserialize_with_modification_events(self):
         xml_node = etree.fromstring(
-            """<?xml version="1.0" encoding="UTF-8"?>
+            b"""<?xml version="1.0" encoding="UTF-8"?>
 <m:OrderDetail xmlns:m="http://api.geotrust.com/webtrust/query">
 <m:ModificationEvents>
 <m:ModificationEvent>
@@ -325,7 +325,7 @@ class TestOrderDetail(object):
 
     def test_deserialize_without_modification_events(self):
         xml_node = etree.fromstring(
-            """<?xml version="1.0" encoding="UTF-8"?>
+            b"""<?xml version="1.0" encoding="UTF-8"?>
 <m:OrderDetail xmlns:m="http://api.geotrust.com/webtrust/query">
 <m:OrderInfo>
 <m:PartnerOrderID>eUogDVDrbdeRelyIzDyblFgWCOeeFc</m:PartnerOrderID>
@@ -417,7 +417,7 @@ class TestOrderDetails(object):
 
     def test_deserialize(self):
         xml_node = etree.fromstring(
-            """<?xml version="1.0" encoding="UTF-8"?>
+            b"""<?xml version="1.0" encoding="UTF-8"?>
 <m:OrderDetails xmlns:m="http://api.geotrust.com/webtrust/query">
 <m:OrderDetail>
 <m:ModificationEvents>
