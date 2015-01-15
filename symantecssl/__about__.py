@@ -9,7 +9,7 @@ __title__ = "symantecssl"
 __summary__ = "Supports working with the Symantec SSL service"
 __uri__ = "https://github.com/cloudkeep/symantecssl"
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __author__ = "Rackspace Barbican Team"
 __email__ = ""
