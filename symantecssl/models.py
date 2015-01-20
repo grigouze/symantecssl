@@ -148,6 +148,7 @@ class GetModifiedOrderRequest(object):
         self.query_request_header = QueryRequestHeader()
         self.from_date = ""
         self.to_date = ""
+        self.response_model = OrderDetails
 
     def serialize(self):
         """Serializes the modified orders request.

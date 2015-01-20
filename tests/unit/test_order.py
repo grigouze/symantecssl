@@ -3,7 +3,7 @@ from mock import patch
 import pytest
 
 from symantecssl.order import FailedRequest, post_request
-from symantecssl.models import GetModifiedOrderRequest, OrderDetails
+from symantecssl.models import GetModifiedOrderRequest
 
 
 class TestPostRequest(object):
@@ -13,7 +13,6 @@ class TestPostRequest(object):
 
         endpoint = "http://www.example.com/"
         request_model = GetModifiedOrderRequest()
-        response_model = OrderDetails
         credentials = {
             "partner_code": "123456",
             "username": "Krieg",
@@ -193,7 +192,7 @@ xmlns:m="http://api.geotrust.com/webtrust/query">
         )
 
         response = post_request(
-            endpoint, request_model, response_model, credentials
+            endpoint, request_model, credentials
         )
 
         detail = response.model[0]
@@ -210,7 +209,6 @@ xmlns:m="http://api.geotrust.com/webtrust/query">
 
         endpoint = "http://www.example.com/"
         request_model = GetModifiedOrderRequest()
-        response_model = OrderDetails
         credentials = {
             "partner_code": "123456",
             "username": "Krieg",
@@ -220,5 +218,5 @@ xmlns:m="http://api.geotrust.com/webtrust/query">
         mocked_post.return_value.status_code = 500
         with pytest.raises(FailedRequest):
             post_request(
-                endpoint, request_model, response_model, credentials
+                endpoint, request_model, credentials
             )
