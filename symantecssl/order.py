@@ -4,7 +4,7 @@ import requests
 
 from lxml import etree
 
-from symantecssl.models import RequestEnvelope as ReqEnv
+from symantecssl.request_models import RequestEnvelope as ReqEnv
 
 
 class FailedRequest(Exception):
