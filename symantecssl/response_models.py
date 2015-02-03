@@ -1,25 +1,20 @@
 from __future__ import absolute_import, division, print_function
 
+from symantecssl import utils
+from symantecssl.models import OrderContacts
+
 # Global Dict to be moved out, will carry namespaces for parsing
 NS = {
     'm': 'http://api.geotrust.com/webtrust/query'
 }
 
+ONS = {
+    'm': 'http://api.geotrust.com/webtrust/order'
+}
+
 SOAP_NS = {
     'soap': 'http://schemas.xmlsoap.org/soap/envelope/'
 }
-
-
-def get_element_text(element):
-    """Checks if element is NoneType.
-
-    :param element: element to check for NoneType
-    :return: text of element or "None" text
-    """
-    if element is not None:
-        return element.text
-    else:
-        return "None"
 
 
 class OrderDetails(list):
@@ -60,13 +55,13 @@ class OrderDetail(object):
         """
         od = OrderDetail()
 
-        od.status_code = get_element_text(
+        od.status_code = utils.get_element_text(
             xml_node.find('.//m:OrderStatusMinorCode', NS)
         )
-        od.status_name = get_element_text(
+        od.status_name = utils.get_element_text(
             xml_node.find('.//m:OrderStatusMinorName', NS)
         )
-        od.approver_email = get_element_text(
+        od.approver_email = utils.get_element_text(
             xml_node.find('.//m:ApproverEmailAddress', NS)
         )
 
@@ -105,92 +100,20 @@ class OrganizationInfo(object):
         :return: parsed organization information response.
         """
         org_info = OrganizationInfo()
-        org_info.name = get_element_text(
+        org_info.name = utils.get_element_text(
             xml_node.find('.//m:OrganizationName', NS)
         )
-        org_info.city = get_element_text(
+        org_info.city = utils.get_element_text(
             xml_node.find('.//m:City', NS)
         )
-        org_info.region = get_element_text(
+        org_info.region = utils.get_element_text(
             xml_node.find('.//m:Region', NS)
         )
-        org_info.country = get_element_text(
+        org_info.country = utils.get_element_text(
             xml_node.find('.//m:Country', NS)
         )
 
         return org_info
-
-
-class OrderContacts(object):
-
-    def __init__(self):
-        self.admin = None
-        self.tech = None
-        self.billing = None
-
-    @classmethod
-    def deserialize(cls, xml_node):
-        """Deserializes the order contacts section in response.
-
-        :param xml_node: XML node to be parsed. Expected to explicitly be
-        Order Contacts XML node.
-        :return: parsed order contacts information response.
-        """
-        contacts = OrderContacts()
-        admin_node = xml_node.find('.//m:AdminContact', NS)
-        tech_node = xml_node.find('.//m:TechContact', NS)
-        billing_node = xml_node.find('.//m:BillingContact', NS)
-
-        contacts.admin = ContactInfo.deserialize(admin_node)
-        contacts.tech = ContactInfo.deserialize(tech_node)
-        contacts.billing = ContactInfo.deserialize(billing_node)
-
-        return contacts
-
-
-class ContactInfo(object):
-
-    def __init__(self):
-        self.first_name = ''
-        self.last_name = ''
-        self.phone = ''
-        self.email = ''
-        self.title = ''
-        self.org_name = ''
-        self.address_line_one = ''
-        self.address_line_two = ''
-        self.city = ''
-        self.region = ''
-        self.postal_code = ''
-        self.country = ''
-        self.fax = ''
-
-    @classmethod
-    def deserialize(cls, xml_node):
-        """Deserializes the contact information section in response.
-
-        :param xml_node: XML node to be parsed. Expected to explicitly be
-        Contact Information XML node.
-        :return: parsed contact information response.
-        """
-        contact = ContactInfo()
-        contact.first_name = get_element_text(
-            xml_node.find('.//m:FirstName', NS)
-        )
-        contact.last_name = get_element_text(
-            xml_node.find('.//m:LastName', NS)
-        )
-        contact.phone = get_element_text(
-            xml_node.find('.//m:Phone', NS)
-        )
-        contact.email = get_element_text(
-            xml_node.find('.//m:Email', NS)
-        )
-        contact.title = get_element_text(
-            xml_node.find('.//m:Title', NS)
-        )
-
-        return contact
 
 
 class CertificateInfo(object):
@@ -210,16 +133,16 @@ class CertificateInfo(object):
         :return: parsed certificate information response.
         """
         cert_info = CertificateInfo()
-        cert_info.common_name = get_element_text(
+        cert_info.common_name = utils.get_element_text(
             xml_node.find('.//m:CommonName', NS)
         )
-        cert_info.status = get_element_text(
+        cert_info.status = utils.get_element_text(
             xml_node.find('.//m:CertificateStatus', NS)
         )
-        cert_info.hash_algorithm = get_element_text(
+        cert_info.hash_algorithm = utils.get_element_text(
             xml_node.find('.//m:SignatureHashAlgorithm', NS)
         )
-        cert_info.encryption_algorithm = get_element_text(
+        cert_info.encryption_algorithm = utils.get_element_text(
             xml_node.find('.//m:SignatureEncryptionAlgorithm', NS)
         )
 
@@ -241,7 +164,7 @@ class Certificate(object):
         :return: parsed certificate response.
         """
         cert = Certificate()
-        cert.server_cert = get_element_text(
+        cert.server_cert = utils.get_element_text(
             xml_node.find('.//m:ServerCertificate', NS)
         )
         ca_certs = xml_node.find('.//m:CACertificates', NS)
@@ -268,8 +191,12 @@ class IntermediateCertificate(object):
         """
 
         inter_info = IntermediateCertificate()
-        inter_info.type = get_element_text(xml_node.find('.//m:Type', NS))
-        inter_info.cert = get_element_text(xml_node.find('.//m:CACert', NS))
+        inter_info.type = utils.get_element_text(
+            xml_node.find('.//m:Type', NS)
+        )
+        inter_info.cert = utils.get_element_text(
+            xml_node.find('.//m:CACert', NS)
+        )
 
         return inter_info
 
@@ -312,14 +239,64 @@ class ModificationEvent(object):
         """
         me = ModificationEvent()
 
-        me.mod_id = get_element_text(
+        me.mod_id = utils.get_element_text(
             xml_node.find('.//m:ModificationEventID', NS)
         )
-        me.event_name = get_element_text(
+        me.event_name = utils.get_element_text(
             xml_node.find('.//m:ModificationEventName', NS)
         )
-        me.time_stamp = get_element_text(
+        me.time_stamp = utils.get_element_text(
             xml_node.find('.//m:ModificationTimestamp', NS)
         )
 
         return me
+
+
+class QuickOrderResponse(object):
+    def __init__(self):
+        self.result = QuickOrderResult()
+
+    @classmethod
+    def deserialize(cls, xml_node):
+        response = QuickOrderResponse()
+        response.result = QuickOrderResult.deserialize(xml_node)
+        return response
+
+
+class QuickOrderResult(object):
+    def __init__(self):
+        self.order_id = ''
+        self.order_response = OrderResponseHeader()
+
+    @classmethod
+    def deserialize(cls, xml_node):
+        result = QuickOrderResult()
+        result.order_id = utils.get_element_text(
+            xml_node.find('.//m:GeoTrustOrderID', ONS)
+        )
+        result.order_response = OrderResponseHeader.deserialize(xml_node)
+
+        return result
+
+
+class OrderResponseHeader(object):
+    def __init__(self):
+        self.partner_order_id = ''
+        self.success_code = ''
+        self.timestamp = ''
+
+
+    @classmethod
+    def deserialize(cls, xml_node):
+        order_response = OrderResponseHeader()
+        order_response.partner_order_id = utils.get_element_text(
+            xml_node.find('.//m:PartnerOrderID', ONS)
+        )
+        order_response.success_code = utils.get_element_text(
+            xml_node.find('.//m:SuccessCode', ONS)
+        )
+        order_response.timestamp = utils.get_element_text(
+            xml_node.find('.//m:Timestamp', ONS)
+        )
+
+        return order_response

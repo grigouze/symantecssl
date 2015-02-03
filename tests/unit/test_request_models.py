@@ -1,8 +1,8 @@
 import datetime
 
 from symantecssl.request_models import (
-    GetModifiedOrderRequest, OrderQueryOptions, QueryRequestHeader,
-    RequestEnvelope
+    GetModifiedOrderRequest, OrderQueryOptions, QuickOrderRequest,
+    RequestHeader, RequestEnvelope
 )
 
 
@@ -24,12 +24,12 @@ class TestQueryRequestHeader(object):
 
     def test_serialize_query_request_header(self):
 
-        qrh = QueryRequestHeader()
+        qrh = RequestHeader()
         qrh.username = "Axton"
         qrh.password = "IHateCL4P-TP!"
         qrh.partner_code = "BL2"
 
-        root = qrh.serialize()
+        root = qrh.serialize(order_type=False)
 
         assert root.find('.//PartnerCode').text == "BL2"
         assert root.find('.//UserName').text == "Axton"
@@ -111,9 +111,9 @@ class TestGetModifiedOrderRequest(object):
         gmor = GetModifiedOrderRequest()
         gmor.set_credentials(partner_code, username, password)
 
-        assert gmor.query_request_header.username == username
-        assert gmor.query_request_header.password == password
-        assert gmor.query_request_header.partner_code == partner_code
+        assert gmor.request_header.username == username
+        assert gmor.request_header.password == password
+        assert gmor.request_header.partner_code == partner_code
 
     def test_set_time_frame(self):
         from_date = datetime.date(2012, 9, 18)
@@ -165,3 +165,36 @@ class TestGetModifiedOrderRequest(object):
         assert not gmor.query_options.vulnerability_scan_summary
         assert not gmor.query_options.vulnerability_scan_details
         assert not gmor.query_options.certificate_algorithm_info
+
+
+class TestQuickOrderRequest(object):
+
+    def test_serialize_quick_order_request(self):
+
+        qor = QuickOrderRequest()
+        qor.approver_email.set_approver_email('salvadore@email.com')
+        qor.set_order_parameters(
+            csr='Fake CSR',
+            domain_name='example.com',
+            partner_order_id='09182012',
+            renewal_indicator='false',
+            renewal_behavior='Thing',
+            server_count='1',
+            hash_algorithm='SHA2-256',
+            special_instructions='Go to Flamerock',
+            valid_period='12',
+            web_server_type='apacheopenssl'
+        )
+        root = qor.serialize()
+
+        assert root.find('.//ApproverEmail').text == 'salvadore@email.com'
+        assert root.find('.//CSR').text == 'Fake CSR'
+        assert root.find('.//DomainName').text == 'example.com'
+        assert root.find('.//OriginalPartnerOrderID').text == '09182012'
+        assert root.find('.//RenewalIndicator').text == 'false'
+        assert root.find('.//RenewalBehavior').text == 'Thing'
+        assert root.find('.//ServerCount').text == '1'
+        assert root.find('.//SignatureHashAlgorithm').text == 'SHA2-256'
+        assert root.find('.//SpecialInstructions').text == 'Go to Flamerock'
+        assert root.find('.//ValidityPeriod').text == '12'
+        assert root.find('.//WebServerType').text == 'apacheopenssl'
