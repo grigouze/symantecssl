@@ -25,6 +25,10 @@ class ApproverEmail(object):
         self.approver_email = ''
 
     def serialize(self):
+        """Serializes the approver email information for request.
+
+        :return: approver e-mail element
+        """
 
         approver_email = etree.Element('ApproverEmail')
         approver_email.text = self.approver_email
@@ -32,6 +36,10 @@ class ApproverEmail(object):
         return approver_email
 
     def set_approver_email(self, approver_email):
+        """Sets approver e-mail for serialization.
+
+        :param approver_email: approver's email for serialization
+        """
         self.approver_email = approver_email
 
 
@@ -67,6 +75,8 @@ class RequestHeader(object):
         self.partner_code = ''
         self.username = ''
         self.password = ''
+        self.product_code = ''
+        self.partner_order_id = ''
 
     def serialize(self, order_type):
         """Serializes the request header.
@@ -81,9 +91,12 @@ class RequestHeader(object):
         """
         if order_type:
             root = etree.Element("OrderRequestHeader")
+            product_code = etree.SubElement(root, 'ProductCode')
+            product_code.text = self.product_code
+            partner_order_id = etree.SubElement(root, 'PartnerOrderID')
+            partner_order_id.text = self.partner_order_id
         else:
             root = etree.Element("QueryRequestHeader")
-
 
         partner_code = etree.SubElement(root, "PartnerCode")
         partner_code.text = self.partner_code
@@ -94,6 +107,16 @@ class RequestHeader(object):
         password.text = self.password
 
         return root
+
+    def set_request_header(self, product_code, partner_order_id):
+        """Sets request information for serialization.
+
+        :param product_code: type of certificate to be ordered (via code). See
+        Symantec's API documentation for specific details.
+        :param partner_order_id: An ID set by the user to track the order.
+        """
+        self.product_code = product_code
+        self.partner_order_id = partner_order_id
 
 
 class OrderQueryOptions(object):
@@ -166,11 +189,13 @@ class OrganizationInfo(object):
         self.org_address = ''
         self.address_line_one = ''
         self.address_line_two = ''
+        self.address_line_three = ''
         self.city = ''
         self.region = ''
         self.postal_code = ''
         self.country = ''
         self.phone = ''
+        self.duns = ''
 
     def serialize(self):
         """Serializes the Organization Info for the request.
@@ -184,13 +209,14 @@ class OrganizationInfo(object):
 
         org_address = etree.SubElement(root, 'OrganizationAddress')
 
-        address_line_one = etree.Element('AddressLine1')
+        address_line_one = etree.SubElement(org_address, 'AddressLine1')
         address_line_one.text = self.address_line_one
-        org_address.append(address_line_one)
 
-        address_line_two = etree.Element('AddressLine2')
+        address_line_two = etree.SubElement(org_address, 'AddressLine2')
         address_line_two.text = self.address_line_two
-        org_address.append(address_line_two)
+
+        address_line_three = etree.SubElement(org_address, 'AddressLine3')
+        address_line_three.text = self.address_line_three
 
         city = etree.Element('City')
         city.text = self.city
@@ -212,6 +238,9 @@ class OrganizationInfo(object):
         phone.text = self.phone
         org_address.append(phone)
 
+        duns = etree.SubElement(root, 'DUNS')
+        duns.text = self.duns
+
         return root
 
 
@@ -228,41 +257,59 @@ class OrderParameters(object):
         self.special_instructions = ''
         self.valid_period = ''
         self.web_server_type = ''
+        self.wildcard = ''
+        self.dnsnames = ''
 
     def serialize(self):
-        """Serializes the Order Parameters section for thet request.
+        """Serializes the Order Parameters section for the request.
 
         note:: Symantec limits customers to 1, 12, 24, 36, and 48 month options
+        for validity period.
+
         :return: root element of OrderParameters
         """
 
         root = etree.Element('OrderParameters')
 
-        #TODO(chellygel): Validate number of months for ValidityPeriod
         valid_period = etree.SubElement(root, 'ValidityPeriod')
         valid_period.text = self.valid_period
+
         server_count = etree.SubElement(root, 'ServerCount')
         server_count.text = self.server_count
+
         domain_name = etree.SubElement(root, 'DomainName')
         domain_name.text = self.domain_name
+
         order_partner_order_id = etree.SubElement(
             root, 'OriginalPartnerOrderID'
         )
         order_partner_order_id.text = self.order_partner_order_id
+
         csr = etree.SubElement(root, 'CSR')
         csr.text = self.csr
+
         web_server_type = etree.SubElement(root, 'WebServerType')
         web_server_type.text = self.web_server_type
+
         renewal_indicator = etree.SubElement(root, 'RenewalIndicator')
         renewal_indicator.text = self.renewal_indicator
+
         renewal_behavior = etree.SubElement(root, 'RenewalBehavior')
         renewal_behavior.text = self.renewal_behavior
+
         signature_hash_algorithm = etree.SubElement(
             root, 'SignatureHashAlgorithm'
         )
         signature_hash_algorithm.text = self.signature_hash_algorithm
+
         special_instructions = etree.SubElement(root, 'SpecialInstructions')
         special_instructions.text = self.special_instructions
+
+        wildcard = etree.SubElement(root, 'WildCard')
+        wildcard.text = self.wildcard
+
+        dnsnames = etree.SubElement(root, 'DNSNames')
+        dnsnames.text = self.dnsnames
 
         return root
 
@@ -415,11 +462,21 @@ class QuickOrderRequest(Request):
         super(QuickOrderRequest, self).__init__()
         self.order_parameters = OrderParameters()
         self.order_contacts = OrderContacts()
+        self.organization_info = OrganizationInfo()
         self.approver_email = ApproverEmail()
         self.response_model = QuickOrderResponse
 
     def serialize(self):
         """Serializes the quick order request.
+
+        The request model for the QuickOrder call in the Symantec
+        SOAP XML API. Serializes all related sections to this request model.
+
+        This will serialize the following:
+            Order Request Header
+            Order Contacts
+            Organization Info
+            Approver Email
 
         :return: root element of the QuickOrderRequest section
         """
@@ -433,12 +490,14 @@ class QuickOrderRequest(Request):
 
         request = etree.SubElement(root, 'Request')
         order_parameters = self.order_parameters.serialize()
+        organization_info = self.organization_info.serialize()
         admin_contact, tech_contact, billing_contact = (
             self.order_contacts.serialize()
         )
         approver_email = self.approver_email.serialize()
 
         request.append(order_request_header)
+        request.append(organization_info)
         request.append(order_parameters)
         request.append(admin_contact)
         request.append(tech_contact)
@@ -450,11 +509,33 @@ class QuickOrderRequest(Request):
     def set_order_parameters(
             self, csr, domain_name, partner_order_id, renewal_indicator,
             renewal_behavior, server_count, hash_algorithm,
-            special_instructions, valid_period, web_server_type
-        ):
+            special_instructions, valid_period, web_server_type,
+            wildcard='false', dns_names=None
+    ):
         """Sets the parameters for the order request.
 
-        :return:
+        Allows the user to change the order parameters options.
+        Check the Symantec API documentation for specifics on each of these
+        components.
+
+        :param csr: the certificate signing request for the order
+        :param domain_name: the domain being covered in the certificate
+        :param order_partner_id: the original id provided by the user for
+        tracking. Used with renewals.
+        :param renewal_indicator: flag to set renewals on
+        :param renewal_behavior: set to either
+        'RenewalNoticesSentAutomatically' or 'RenewalNoticesNotSent'
+        :param server_count: Reference the Symantec API documentation
+        :param signature_hash_algorithm: hashing algorithm for certificate
+        (ex: SHA2-256)
+        :param special_instructions: notes for the approver
+        :param valid_period: length of certificate in months. Defaults to 12.
+        See Symantec API documentation for specifics per product.
+        :param web_server_type: See Symantec API documentation for options
+        :param wildcard: optional field. Indicates if the order is a wildcard
+        or not. Binary
+        :param dnsnames: optional field. Comma separated values for SAN
+        certificates
         """
 
         self.order_parameters.csr = csr
@@ -467,3 +548,5 @@ class QuickOrderRequest(Request):
         self.order_parameters.special_instructions = special_instructions
         self.order_parameters.valid_period = valid_period
         self.order_parameters.web_server_type = web_server_type
+        self.order_parameters.wildcard = wildcard
+        self.order_parameters.dnsnames = dns_names

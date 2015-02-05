@@ -40,7 +40,10 @@ class OrderContacts(object):
         return contacts
 
     def serialize(self):
+        """Serializes the order contacts section for request.
 
+        :return: each of the contact elements
+        """
         admin_ele = self.admin.serialize('AdminContact')
         tech_ele = self.tech.serialize('TechContact')
         billing_ele = self.billing.serialize('BillingContact')
@@ -93,6 +96,12 @@ class ContactInfo(object):
         return contact
 
     def serialize(self, element_name):
+        """
+
+        :param element_name: contact element type. Limited to Admin, Tech, and
+         Billing.
+        :return: the contact element that is to be used for request.
+        """
 
         ele = etree.Element(element_name)
         first_name = etree.SubElement(ele, 'FirstName')
@@ -125,10 +134,26 @@ class ContactInfo(object):
         return ele
 
     def set_contact_info(
-            self, contact_type, first_name, last_name, phone, email, title,
+            self, first_name, last_name, phone, email, title,
             org_name=None, address_one=None, address_two=None, city=None,
             region=None, postal_code=None, country=None, fax=None
     ):
+        """Sets information for Contact Info to be used in request.
+
+        :param first_name:
+        :param last_name:
+        :param phone:
+        :param email:
+        :param title:
+        :param org_name:
+        :param address_one: line one of address for contact
+        :param address_two: line two of address for contact
+        :param city:
+        :param region: region or state of contact
+        :param postal_code:
+        :param country:
+        :param fax: do people still have fax numbers?
+        """
         self.first_name = first_name
         self.last_name = last_name
         self.phone = phone

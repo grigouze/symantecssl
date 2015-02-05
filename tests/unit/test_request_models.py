@@ -1,5 +1,7 @@
+from __future__ import absolute_import, division, print_function
 import datetime
 
+from symantecssl.models import ContactInfo
 from symantecssl.request_models import (
     GetModifiedOrderRequest, OrderQueryOptions, QuickOrderRequest,
     RequestHeader, RequestEnvelope
@@ -35,6 +37,16 @@ class TestQueryRequestHeader(object):
         assert root.find('.//UserName').text == "Axton"
         assert root.find('.//Password').text == "IHateCL4P-TP!"
         assert len(root.findall('.//AuthToken')) == 1
+
+    def test_set_request_header(self):
+
+        qrh = RequestHeader()
+        qrh.set_request_header('SSL123', '2364')
+
+        root = qrh.serialize(order_type=True)
+
+        assert root.find('.//ProductCode').text == "SSL123"
+        assert root.find('.//PartnerOrderID').text == "2364"
 
 
 class TestOrderQueryOptions(object):
@@ -183,7 +195,9 @@ class TestQuickOrderRequest(object):
             hash_algorithm='SHA2-256',
             special_instructions='Go to Flamerock',
             valid_period='12',
-            web_server_type='apacheopenssl'
+            web_server_type='apacheopenssl',
+            wildcard='true',
+            dns_names='www.email.com, www.example.com'
         )
         root = qor.serialize()
 
@@ -198,3 +212,67 @@ class TestQuickOrderRequest(object):
         assert root.find('.//SpecialInstructions').text == 'Go to Flamerock'
         assert root.find('.//ValidityPeriod').text == '12'
         assert root.find('.//WebServerType').text == 'apacheopenssl'
+        assert root.find('.//WildCard').text == 'true'
+        assert root.find('.//DNSNames').text == (
+            'www.email.com, www.example.com'
+        )
+
+
+class TestContactInfo(object):
+
+    def assert_contact(self, contact_type, instance):
+        root = instance.serialize(contact_type)
+
+        assert root.find('.//FirstName').text == 'Tiny'
+        assert root.find('.//LastName').text == 'Tina'
+        assert root.find('.//Phone').text == '210-555-5555'
+        assert root.find('.//Email').text == 'tinytina@email.com'
+        assert root.find('.//Title').text == 'Explosives Expert'
+        assert root.find('.//OrganizationName').text == 'Crimson Raiders'
+        assert root.find('.//AddressLine1').text == 'Dragon Keep'
+        assert root.find('.//AddressLine2').text == 'Chambers'
+        assert root.find('.//City').text == 'Flamerock'
+        assert root.find('.//Region').text == 'Unassuming Docks'
+        assert root.find('.//PostalCode').text == '131333'
+        assert root.find('.//Country').text == 'Pandora'
+        assert root.find('.//Fax').text == '210-555-5554'
+
+    def test_serialize(self):
+
+        ci = ContactInfo()
+        ci.first_name = 'Tiny'
+        ci.last_name = 'Tina'
+        ci.phone = '210-555-5555'
+        ci.email = 'tinytina@email.com'
+        ci.title = 'Explosives Expert'
+        ci.org_name = 'Crimson Raiders'
+        ci.address_line_one = 'Dragon Keep'
+        ci.address_line_two = 'Chambers'
+        ci.city = "Flamerock"
+        ci.region = 'Unassuming Docks'
+        ci.postal_code = '131333'
+        ci.country = 'Pandora'
+        ci.fax = '210-555-5554'
+
+        self.assert_contact('AdminContact', ci)
+
+    def test_set_contact_info(self):
+
+        ci = ContactInfo()
+        ci.set_contact_info(
+            first_name='Tiny',
+            last_name='Tina',
+            phone='210-555-5555',
+            email='tinytina@email.com',
+            title='Explosives Expert',
+            org_name='Crimson Raiders',
+            address_one='Dragon Keep',
+            address_two='Chambers',
+            city="Flamerock",
+            region='Unassuming Docks',
+            postal_code='131333',
+            country='Pandora',
+            fax='210-555-5554'
+        )
+
+        self.assert_contact('TechContact', ci)

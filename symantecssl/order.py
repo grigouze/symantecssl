@@ -17,6 +17,7 @@ def post_request(endpoint, request_model, credentials):
 
     Currently supported Request Models are:
     GetModifiedOrders
+    QuickOrderRequest
 
     note:: the request can take a considerable amount of time if the
     date range covers a large amount of changes.
@@ -37,7 +38,7 @@ def post_request(endpoint, request_model, credentials):
 
     request_model.set_credentials(**credentials)
     model = ReqEnv(request_model=request_model)
-    serialized_xml = etree.tostring(model.serialize())
+    serialized_xml = etree.tostring(model.serialize(), pretty_print=True)
 
     headers = {'Content-Type': 'application/soap+xml'}
 

@@ -1,3 +1,4 @@
+from __future__ import absolute_import, division, print_function
 from lxml import etree
 
 from symantecssl import utils
@@ -7,7 +8,6 @@ from symantecssl.response_models import (
     ModificationEvents, OrganizationInfo, OrderDetail, OrderDetails,
     OrderResponseHeader, QuickOrderResponse, QuickOrderResult
 )
-
 
 
 class TestOrganizationInfo(object):
@@ -570,5 +570,3 @@ class TestOrderResponseHeader(object):
         response = OrderResponseHeader.deserialize(xml_node)
         assert response.success_code == '0'
         assert response.partner_order_id == '04201988'
-
-

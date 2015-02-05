@@ -285,7 +285,6 @@ class OrderResponseHeader(object):
         self.success_code = ''
         self.timestamp = ''
 
-
     @classmethod
     def deserialize(cls, xml_node):
         order_response = OrderResponseHeader()
