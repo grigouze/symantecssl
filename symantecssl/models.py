@@ -96,7 +96,7 @@ class ContactInfo(object):
         return contact
 
     def serialize(self, element_name):
-        """
+        """Serializes the contact information section in the request.
 
         :param element_name: contact element type. Limited to Admin, Tech, and
          Billing.
@@ -104,40 +104,33 @@ class ContactInfo(object):
         """
 
         ele = etree.Element(element_name)
-        first_name = etree.SubElement(ele, 'FirstName')
-        first_name.text = self.first_name
-        last_name = etree.SubElement(ele, 'LastName')
-        last_name.text = self.last_name
-        phone = etree.SubElement(ele, 'Phone')
-        phone.text = self.phone
-        email = etree.SubElement(ele, 'Email')
-        email.text = self.email
-        title = etree.SubElement(ele, 'Title')
-        title.text = self.title
-        org_name = etree.SubElement(ele, 'OrganizationName')
-        org_name.text = self.org_name
-        address_one = etree.SubElement(ele, 'AddressLine1')
-        address_one.text = self.address_line_one
-        address_two = etree.SubElement(ele, 'AddressLine2')
-        address_two.text = self.address_line_two
-        city = etree.SubElement(ele, 'City')
-        city.text = self.city
-        region = etree.SubElement(ele, 'Region')
-        region.text = self.region
-        postal_code = etree.SubElement(ele, 'PostalCode')
-        postal_code.text = self.postal_code
-        country = etree.SubElement(ele, 'Country')
-        country.text = self.country
-        fax = etree.SubElement(ele, 'Fax')
-        fax.text = self.fax
+
+        utils.create_subelement_with_text(ele, 'FirstName', self.first_name)
+        utils.create_subelement_with_text(ele, 'LastName', self.last_name)
+        utils.create_subelement_with_text(ele, 'Phone', self.phone)
+        utils.create_subelement_with_text(ele, 'Email', self.email)
+        utils.create_subelement_with_text(ele, 'Title', self.title)
+        utils.create_subelement_with_text(
+            ele, 'OrganizationName', self.org_name
+        )
+        utils.create_subelement_with_text(
+            ele, 'AddressLine1', self.address_line_one
+        )
+        utils.create_subelement_with_text(
+            ele, 'AddressLine2', self.address_line_two
+        )
+        utils.create_subelement_with_text(ele, 'City', self.city)
+        utils.create_subelement_with_text(ele, 'Region', self.region)
+        utils.create_subelement_with_text(ele, 'PostalCode', self.postal_code)
+        utils.create_subelement_with_text(ele, 'Country', self.country)
+        utils.create_subelement_with_text(ele, 'Fax', self.fax)
 
         return ele
 
     def set_contact_info(
             self, first_name, last_name, phone, email, title,
             org_name=None, address_one=None, address_two=None, city=None,
-            region=None, postal_code=None, country=None, fax=None
-    ):
+            region=None, postal_code=None, country=None, fax=None):
         """Sets information for Contact Info to be used in request.
 
         :param first_name:

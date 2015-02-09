@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 from lxml import etree
 
+from symantecssl import utils
 from symantecssl.response_models import (
     OrderDetails, OrderContacts, QuickOrderResponse
 )
@@ -91,20 +92,26 @@ class RequestHeader(object):
         """
         if order_type:
             root = etree.Element("OrderRequestHeader")
-            product_code = etree.SubElement(root, 'ProductCode')
-            product_code.text = self.product_code
-            partner_order_id = etree.SubElement(root, 'PartnerOrderID')
-            partner_order_id.text = self.partner_order_id
+            utils.create_subelement_with_text(
+                root, 'ProductCode', self.product_code
+            )
+            utils.create_subelement_with_text(
+                root, 'PartnerOrderID', self.partner_order_id
+            )
         else:
             root = etree.Element("QueryRequestHeader")
 
-        partner_code = etree.SubElement(root, "PartnerCode")
-        partner_code.text = self.partner_code
+        utils.create_subelement_with_text(
+            root, 'PartnerCode', self.partner_code
+        )
         auth_token = etree.SubElement(root, "AuthToken")
-        username = etree.SubElement(auth_token, "UserName")
-        username.text = self.username
-        password = etree.SubElement(auth_token, "Password")
-        password.text = self.password
+
+        utils.create_subelement_with_text(
+            auth_token, "UserName", self.username
+        )
+        utils.create_subelement_with_text(
+            auth_token, "Password", self.password
+        )
 
         return root
 
@@ -203,20 +210,21 @@ class OrganizationInfo(object):
         :return: root element for the organization info
         """
         root = etree.Element('OrganizationInfo')
-
-        org_name = etree.SubElement(root, 'OrganizationName')
-        org_name.text = self.org_name
+        utils.create_subelement_with_text(
+            root, 'OrganizationName', self.org_name
+        )
 
         org_address = etree.SubElement(root, 'OrganizationAddress')
 
-        address_line_one = etree.SubElement(org_address, 'AddressLine1')
-        address_line_one.text = self.address_line_one
-
-        address_line_two = etree.SubElement(org_address, 'AddressLine2')
-        address_line_two.text = self.address_line_two
-
-        address_line_three = etree.SubElement(org_address, 'AddressLine3')
-        address_line_three.text = self.address_line_three
+        utils.create_subelement_with_text(
+            org_address, 'AddressLine1', self.address_line_one
+        )
+        utils.create_subelement_with_text(
+            org_address, 'AddressLine2', self.address_line_two
+        )
+        utils.create_subelement_with_text(
+            org_address, 'AddressLine3', self.address_line_three
+        )
 
         city = etree.Element('City')
         city.text = self.city
@@ -238,8 +246,7 @@ class OrganizationInfo(object):
         phone.text = self.phone
         org_address.append(phone)
 
-        duns = etree.SubElement(root, 'DUNS')
-        duns.text = self.duns
+        utils.create_subelement_with_text(root, 'DUNS', self.duns)
 
         return root
 
@@ -271,45 +278,36 @@ class OrderParameters(object):
 
         root = etree.Element('OrderParameters')
 
-        valid_period = etree.SubElement(root, 'ValidityPeriod')
-        valid_period.text = self.valid_period
-
-        server_count = etree.SubElement(root, 'ServerCount')
-        server_count.text = self.server_count
-
-        domain_name = etree.SubElement(root, 'DomainName')
-        domain_name.text = self.domain_name
-
-        order_partner_order_id = etree.SubElement(
-            root, 'OriginalPartnerOrderID'
+        utils.create_subelement_with_text(
+            root, 'ValidityPeriod', self.valid_period
         )
-        order_partner_order_id.text = self.order_partner_order_id
-
-        csr = etree.SubElement(root, 'CSR')
-        csr.text = self.csr
-
-        web_server_type = etree.SubElement(root, 'WebServerType')
-        web_server_type.text = self.web_server_type
-
-        renewal_indicator = etree.SubElement(root, 'RenewalIndicator')
-        renewal_indicator.text = self.renewal_indicator
-
-        renewal_behavior = etree.SubElement(root, 'RenewalBehavior')
-        renewal_behavior.text = self.renewal_behavior
-
-        signature_hash_algorithm = etree.SubElement(
-            root, 'SignatureHashAlgorithm'
+        utils.create_subelement_with_text(
+            root, 'ServerCount', self.server_count
         )
-        signature_hash_algorithm.text = self.signature_hash_algorithm
-
-        special_instructions = etree.SubElement(root, 'SpecialInstructions')
-        special_instructions.text = self.special_instructions
-
-        wildcard = etree.SubElement(root, 'WildCard')
-        wildcard.text = self.wildcard
-
-        dnsnames = etree.SubElement(root, 'DNSNames')
-        dnsnames.text = self.dnsnames
+        utils.create_subelement_with_text(
+            root, 'DomainName', self.domain_name
+        )
+        utils.create_subelement_with_text(
+            root, 'OriginalPartnerOrderID', self.order_partner_order_id
+        )
+        utils.create_subelement_with_text(root, 'CSR', self.csr)
+        utils.create_subelement_with_text(
+            root, 'WebServerType', self.web_server_type
+        )
+        utils.create_subelement_with_text(
+            root, 'RenewalIndicator', self.renewal_indicator
+        )
+        utils.create_subelement_with_text(
+            root, 'RenewalBehavior', self.renewal_behavior
+        )
+        utils.create_subelement_with_text(
+            root, 'SignatureHashAlgorithm', self.signature_hash_algorithm
+        )
+        utils.create_subelement_with_text(
+            root, 'SpecialInstructions', self.special_instructions
+        )
+        utils.create_subelement_with_text(root, 'WildCard', self.wildcard)
+        utils.create_subelement_with_text(root, 'DNSNames', self.dnsnames)
 
         return root
 
