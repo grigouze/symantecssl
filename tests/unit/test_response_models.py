@@ -1,10 +1,12 @@
+from __future__ import absolute_import, division, print_function
 from lxml import etree
 
+from symantecssl import utils
+from symantecssl.models import OrderContacts, ContactInfo
 from symantecssl.response_models import (
-    ContactInfo, Certificate, CertificateInfo,
-    IntermediateCertificate, ModificationEvent, ModificationEvents,
-    OrderContacts, OrganizationInfo, OrderDetail, OrderDetails,
-    get_element_text
+    Certificate, CertificateInfo, IntermediateCertificate, ModificationEvent,
+    ModificationEvents, OrganizationInfo, OrderDetail, OrderDetails,
+    OrderResponseHeader, QuickOrderResponse, QuickOrderResult
 )
 
 
@@ -510,6 +512,61 @@ class TestGetElementText(object):
 
     def test_get_element_text_with_none_type(self):
         element = None
-        text = get_element_text(element)
+        text = utils.get_element_text(element)
 
         assert text == "None"
+
+
+class TestQuickOrderResponse(object):
+
+    def test_deserialize(self):
+        xml_node = etree.fromstring(b"""<?xml version="1.0" encoding="UTF-8"?>
+<m:QuickOrderResponse xmlns:m="http://api.geotrust.com/webtrust/order">
+<m:QuickOrderResult>
+<m:OrderResponseHeader>
+<m:PartnerOrderID>04201988</m:PartnerOrderID>
+<m:SuccessCode>0</m:SuccessCode>
+<m:Timestamp>2015-01-29T20:42:05.447+00:00</m:Timestamp>
+</m:OrderResponseHeader>
+<m:GeoTrustOrderID>1912794</m:GeoTrustOrderID>
+</m:QuickOrderResult>
+</m:QuickOrderResponse>
+        """)
+
+        order_response = QuickOrderResponse.deserialize(xml_node)
+        assert type(order_response) == QuickOrderResponse
+
+
+class TestQuickOrderResult(object):
+
+    def test_deserialize(self):
+        xml_node = etree.fromstring(b"""<?xml version="1.0" encoding="UTF-8"?>
+<m:QuickOrderResult xmlns:m="http://api.geotrust.com/webtrust/order">
+<m:OrderResponseHeader>
+<m:PartnerOrderID>04201988</m:PartnerOrderID>
+<m:SuccessCode>0</m:SuccessCode>
+<m:Timestamp>2015-01-29T20:42:05.447+00:00</m:Timestamp>
+</m:OrderResponseHeader>
+<m:GeoTrustOrderID>1912794</m:GeoTrustOrderID>
+</m:QuickOrderResult>
+        """)
+
+        order_result = QuickOrderResult.deserialize(xml_node)
+
+        assert order_result.order_id == '1912794'
+
+
+class TestOrderResponseHeader(object):
+
+    def test_deserialize(self):
+        xml_node = etree.fromstring(b"""<?xml version="1.0" encoding="UTF-8"?>
+<m:OrderResponseHeader xmlns:m="http://api.geotrust.com/webtrust/order">
+<m:PartnerOrderID>04201988</m:PartnerOrderID>
+<m:SuccessCode>0</m:SuccessCode>
+<m:Timestamp>2015-01-29T20:42:05.447+00:00</m:Timestamp>
+</m:OrderResponseHeader>
+        """)
+
+        response = OrderResponseHeader.deserialize(xml_node)
+        assert response.success_code == '0'
+        assert response.partner_order_id == '04201988'

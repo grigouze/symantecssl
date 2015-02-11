@@ -1,8 +1,10 @@
+from __future__ import absolute_import, division, print_function
 import datetime
 
+from symantecssl.models import ContactInfo
 from symantecssl.request_models import (
-    GetModifiedOrderRequest, OrderQueryOptions, QueryRequestHeader,
-    RequestEnvelope
+    GetModifiedOrderRequest, OrderQueryOptions, QuickOrderRequest,
+    RequestHeader, RequestEnvelope
 )
 
 
@@ -24,17 +26,27 @@ class TestQueryRequestHeader(object):
 
     def test_serialize_query_request_header(self):
 
-        qrh = QueryRequestHeader()
+        qrh = RequestHeader()
         qrh.username = "Axton"
         qrh.password = "IHateCL4P-TP!"
         qrh.partner_code = "BL2"
 
-        root = qrh.serialize()
+        root = qrh.serialize(order_type=False)
 
         assert root.find('.//PartnerCode').text == "BL2"
         assert root.find('.//UserName').text == "Axton"
         assert root.find('.//Password').text == "IHateCL4P-TP!"
         assert len(root.findall('.//AuthToken')) == 1
+
+    def test_set_request_header(self):
+
+        qrh = RequestHeader()
+        qrh.set_request_header('SSL123', '2364')
+
+        root = qrh.serialize(order_type=True)
+
+        assert root.find('.//ProductCode').text == "SSL123"
+        assert root.find('.//PartnerOrderID').text == "2364"
 
 
 class TestOrderQueryOptions(object):
@@ -111,9 +123,9 @@ class TestGetModifiedOrderRequest(object):
         gmor = GetModifiedOrderRequest()
         gmor.set_credentials(partner_code, username, password)
 
-        assert gmor.query_request_header.username == username
-        assert gmor.query_request_header.password == password
-        assert gmor.query_request_header.partner_code == partner_code
+        assert gmor.request_header.username == username
+        assert gmor.request_header.password == password
+        assert gmor.request_header.partner_code == partner_code
 
     def test_set_time_frame(self):
         from_date = datetime.date(2012, 9, 18)
@@ -165,3 +177,102 @@ class TestGetModifiedOrderRequest(object):
         assert not gmor.query_options.vulnerability_scan_summary
         assert not gmor.query_options.vulnerability_scan_details
         assert not gmor.query_options.certificate_algorithm_info
+
+
+class TestQuickOrderRequest(object):
+
+    def test_serialize_quick_order_request(self):
+
+        qor = QuickOrderRequest()
+        qor.approver_email.set_approver_email('salvadore@email.com')
+        qor.set_order_parameters(
+            csr='Fake CSR',
+            domain_name='example.com',
+            partner_order_id='09182012',
+            renewal_indicator='false',
+            renewal_behavior='Thing',
+            server_count='1',
+            hash_algorithm='SHA2-256',
+            special_instructions='Go to Flamerock',
+            valid_period='12',
+            web_server_type='apacheopenssl',
+            wildcard='true',
+            dns_names='www.email.com, www.example.com'
+        )
+        root = qor.serialize()
+
+        assert root.find('.//ApproverEmail').text == 'salvadore@email.com'
+        assert root.find('.//CSR').text == 'Fake CSR'
+        assert root.find('.//DomainName').text == 'example.com'
+        assert root.find('.//OriginalPartnerOrderID').text == '09182012'
+        assert root.find('.//RenewalIndicator').text == 'false'
+        assert root.find('.//RenewalBehavior').text == 'Thing'
+        assert root.find('.//ServerCount').text == '1'
+        assert root.find('.//SignatureHashAlgorithm').text == 'SHA2-256'
+        assert root.find('.//SpecialInstructions').text == 'Go to Flamerock'
+        assert root.find('.//ValidityPeriod').text == '12'
+        assert root.find('.//WebServerType').text == 'apacheopenssl'
+        assert root.find('.//WildCard').text == 'true'
+        assert root.find('.//DNSNames').text == (
+            'www.email.com, www.example.com'
+        )
+
+
+class TestContactInfo(object):
+
+    def assert_contact(self, contact_type, instance):
+        root = instance.serialize(contact_type)
+
+        assert root.find('.//FirstName').text == 'Tiny'
+        assert root.find('.//LastName').text == 'Tina'
+        assert root.find('.//Phone').text == '210-555-5555'
+        assert root.find('.//Email').text == 'tinytina@email.com'
+        assert root.find('.//Title').text == 'Explosives Expert'
+        assert root.find('.//OrganizationName').text == 'Crimson Raiders'
+        assert root.find('.//AddressLine1').text == 'Dragon Keep'
+        assert root.find('.//AddressLine2').text == 'Chambers'
+        assert root.find('.//City').text == 'Flamerock'
+        assert root.find('.//Region').text == 'Unassuming Docks'
+        assert root.find('.//PostalCode').text == '131333'
+        assert root.find('.//Country').text == 'Pandora'
+        assert root.find('.//Fax').text == '210-555-5554'
+
+    def test_serialize(self):
+
+        ci = ContactInfo()
+        ci.first_name = 'Tiny'
+        ci.last_name = 'Tina'
+        ci.phone = '210-555-5555'
+        ci.email = 'tinytina@email.com'
+        ci.title = 'Explosives Expert'
+        ci.org_name = 'Crimson Raiders'
+        ci.address_line_one = 'Dragon Keep'
+        ci.address_line_two = 'Chambers'
+        ci.city = "Flamerock"
+        ci.region = 'Unassuming Docks'
+        ci.postal_code = '131333'
+        ci.country = 'Pandora'
+        ci.fax = '210-555-5554'
+
+        self.assert_contact('AdminContact', ci)
+
+    def test_set_contact_info(self):
+
+        ci = ContactInfo()
+        ci.set_contact_info(
+            first_name='Tiny',
+            last_name='Tina',
+            phone='210-555-5555',
+            email='tinytina@email.com',
+            title='Explosives Expert',
+            org_name='Crimson Raiders',
+            address_one='Dragon Keep',
+            address_two='Chambers',
+            city="Flamerock",
+            region='Unassuming Docks',
+            postal_code='131333',
+            country='Pandora',
+            fax='210-555-5554'
+        )
+
+        self.assert_contact('TechContact', ci)
