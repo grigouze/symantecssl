@@ -3,7 +3,7 @@ from lxml import etree
 
 from symantecssl import utils
 from symantecssl.response_models import (
-    OrderDetails, OrderContacts, QuickOrderResponse
+    OrderDetails, OrderDetail, OrderContacts, QuickOrderResponse
 )
 
 # Global Dict to be moved out, will carry namespaces for parsing
@@ -321,6 +321,7 @@ class Request(object):
         self.from_date = ''
         self.to_date = ''
         self.request_header = RequestHeader()
+        self.query_options = OrderQueryOptions()
 
     def set_credentials(self, partner_code, username, password):
 
@@ -351,51 +352,6 @@ class Request(object):
         """
         self.from_date = from_date.isoformat()
         self.to_date = to_date.isoformat()
-
-
-class GetModifiedOrderRequest(Request):
-
-    def __init__(self):
-        super(GetModifiedOrderRequest, self).__init__()
-        self.query_options = OrderQueryOptions()
-        self.response_model = OrderDetails
-
-    def serialize(self):
-        """Serializes the modified orders request.
-
-        The request model for the GetModifiedOrders call in the Symantec
-        SOAP XML API. Serializes all related sections to this request model.
-
-        This will serialize the following:
-            Query Request Header
-            Query Options
-
-
-        :return: root element for the get modified order request
-        """
-        root = etree.Element(
-            'GetModifiedOrders',
-            nsmap={None: 'http://api.geotrust.com/webtrust/query'}
-        )
-
-        query_request_header = self.request_header.serialize(
-            order_type=False
-        )
-        query_options = self.query_options.serialize()
-
-        request = etree.SubElement(root, 'Request')
-
-        from_date_ele = etree.Element('FromDate')
-        to_date_ele = etree.Element('ToDate')
-        from_date_ele.text = self.from_date
-        to_date_ele.text = self.to_date
-
-        request.append(query_request_header)
-        request.append(query_options)
-        request.append(from_date_ele)
-        request.append(to_date_ele)
-
-        return root
 
     def set_query_options(
         self, product_detail, contacts, payment_info,
@@ -452,6 +408,50 @@ class GetModifiedOrderRequest(Request):
         self.query_options.vulnerability_scan_details = (
             vulnerability_scan_details)
         self.query_options.certificate_algorithm_info = cert_algorithm_info
+
+
+class GetModifiedOrderRequest(Request):
+
+    def __init__(self):
+        super(GetModifiedOrderRequest, self).__init__()
+        self.response_model = OrderDetails
+
+    def serialize(self):
+        """Serializes the modified orders request.
+
+        The request model for the GetModifiedOrders call in the Symantec
+        SOAP XML API. Serializes all related sections to this request model.
+
+        This will serialize the following:
+            Query Request Header
+            Query Options
+
+
+        :return: root element for the get modified order request
+        """
+        root = etree.Element(
+            'GetModifiedOrders',
+            nsmap={None: 'http://api.geotrust.com/webtrust/query'}
+        )
+
+        query_request_header = self.request_header.serialize(
+            order_type=False
+        )
+        query_options = self.query_options.serialize()
+
+        request = etree.SubElement(root, 'Request')
+
+        from_date_ele = etree.Element('FromDate')
+        to_date_ele = etree.Element('ToDate')
+        from_date_ele.text = self.from_date
+        to_date_ele.text = self.to_date
+
+        request.append(query_request_header)
+        request.append(query_options)
+        request.append(from_date_ele)
+        request.append(to_date_ele)
+
+        return root
 
 
 class QuickOrderRequest(Request):
@@ -548,3 +548,50 @@ class QuickOrderRequest(Request):
         self.order_parameters.web_server_type = web_server_type
         self.order_parameters.wildcard = wildcard
         self.order_parameters.dnsnames = dns_names
+
+
+class GetOrderByPartnerOrderID(Request):
+
+    def __init__(self):
+        super(GetOrderByPartnerOrderID, self).__init__()
+        self.response_model = OrderDetail
+        self.partner_order_id = ''
+
+    def serialize(self):
+        """Serializes the modified orders request.
+
+        The request model for the GetModifiedOrders call in the Symantec
+        SOAP XML API. Serializes all related sections to this request model.
+
+        This will serialize the following:
+            Query Request Header
+            Query Options
+
+
+        :return: root element for the get modified order request
+        """
+        root = etree.Element(
+            'GetOrderByPartnerOrderID',
+            nsmap={None: 'http://api.geotrust.com/webtrust/query'}
+        )
+
+        query_request_header = self.request_header.serialize(
+            order_type=False
+        )
+        query_options = self.query_options.serialize()
+
+        request = etree.SubElement(root, 'Request')
+        request.append(query_request_header)
+        utils.create_subelement_with_text(
+            request, 'PartnerOrderID', self.partner_order_id
+        )
+        request.append(query_options)
+
+        return root
+
+    def set_partner_order_id(self, partner_order_id):
+        """Sets the partner order ID for order retrieval.
+
+        :param partner_order_id: the partner order id from a previous order
+        """
+        self.partner_order_id = partner_order_id
