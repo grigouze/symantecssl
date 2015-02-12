@@ -266,7 +266,6 @@ class Vulnerabilities(list):
     def deserialize(cls, xml_node):
         """Deserializes the Vulnerabilities section in the response.
 
-
         :param xml_node: XML node to be parsed. Expected to explicitly be
         Vulnerabilities XML node.
         :return: parsed vulnerabilities response.

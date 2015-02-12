@@ -426,7 +426,6 @@ class GetModifiedOrderRequest(Request):
             Query Request Header
             Query Options
 
-
         :return: root element for the get modified order request
         """
         root = etree.Element(
@@ -566,7 +565,6 @@ class GetOrderByPartnerOrderID(Request):
         This will serialize the following:
             Query Request Header
             Query Options
-
 
         :return: root element for the get order by partner order id
         """
