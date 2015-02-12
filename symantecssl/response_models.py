@@ -43,6 +43,7 @@ class OrderDetail(object):
         self.organization_info = OrganizationInfo()
         self.organization_contacts = OrderContacts()
         self.modified_events = ModificationEvents()
+        self.vulnerabilities = Vulnerabilities()
         self.approver_email = ''
 
     @classmethod
@@ -76,8 +77,12 @@ class OrderDetail(object):
             od.modified_events = (
                 ModificationEvents.deserialize(mod_events_node)
             )
-        else:
-            pass
+
+        if xml_node.find('.//m:Vulnerabilities', NS) is not None:
+            vulnerability_node = xml_node.find('.//m:Vulnerabilities', NS)
+            od.vulnerabilities = (
+                Vulnerabilities.deserialize(vulnerability_node)
+            )
 
         return od
 
@@ -250,6 +255,49 @@ class ModificationEvent(object):
         )
 
         return me
+
+
+class Vulnerabilities(list):
+
+    def __init__(self, details_to_add=[]):
+        self.extend(details_to_add)
+
+    @classmethod
+    def deserialize(cls, xml_node):
+        """Deserializes the Vulnerabilities section in the response.
+
+        :param xml_node: XML node to be parsed. Expected to explicitly be
+        Vulnerabilities XML node.
+        :return: parsed vulnerabilities response.
+        """
+        details = [Vulnerability.deserialize(node) for node in
+                   xml_node.findall('.//m:Vulnerability', NS)]
+        return Vulnerabilities(details)
+
+
+class Vulnerability(object):
+    def __init__(self):
+        self.severity = ''
+        self.number_found = ''
+
+    @classmethod
+    def deserialize(cls, xml_node):
+        """ Deserializes the vulnerability section in the response.
+
+        :param xml_node: XML node to be parsed. Expected to explicitly be
+        Vulnerability XML node.
+        :return: parsed vulnerability response.
+        """
+        vuln = Vulnerability()
+
+        vuln.mod_id = utils.get_element_text(
+            xml_node.find('.//m:Severity', NS)
+        )
+        vuln.event_name = utils.get_element_text(
+            xml_node.find('.//m:NumberFound', NS)
+        )
+
+        return vuln
 
 
 class QuickOrderResponse(object):

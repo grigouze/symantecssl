@@ -3,8 +3,8 @@ import datetime
 
 from symantecssl.models import ContactInfo
 from symantecssl.request_models import (
-    GetModifiedOrderRequest, OrderQueryOptions, QuickOrderRequest,
-    RequestHeader, RequestEnvelope
+    GetModifiedOrderRequest, GetOrderByPartnerOrderID,
+    OrderQueryOptions, QuickOrderRequest, RequestHeader, RequestEnvelope
 )
 
 
@@ -276,3 +276,22 @@ class TestContactInfo(object):
         )
 
         self.assert_contact('TechContact', ci)
+
+
+class TestGetOrderByPartnerOrderID(object):
+
+    def test_serialize(self):
+
+        gopoid = GetOrderByPartnerOrderID()
+        gopoid.partner_order_id = '1989'
+        root = gopoid.serialize()
+
+        assert root.find('.//PartnerOrderID').text == '1989'
+
+    def test_set_partner_order_id(self):
+
+        gopoid = GetOrderByPartnerOrderID()
+        gopoid.set_partner_order_id('2464')
+        root = gopoid.serialize()
+
+        assert root.find('.//PartnerOrderID').text == '2464'
