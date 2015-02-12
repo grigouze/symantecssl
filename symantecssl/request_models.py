@@ -558,9 +558,9 @@ class GetOrderByPartnerOrderID(Request):
         self.partner_order_id = ''
 
     def serialize(self):
-        """Serializes the modified orders request.
+        """Serializes the get order by partner order ID.
 
-        The request model for the GetModifiedOrders call in the Symantec
+        The request model for the GetOrderByPartnerOrderID call in the Symantec
         SOAP XML API. Serializes all related sections to this request model.
 
         This will serialize the following:
@@ -568,7 +568,7 @@ class GetOrderByPartnerOrderID(Request):
             Query Options
 
 
-        :return: root element for the get modified order request
+        :return: root element for the get order by partner order id
         """
         root = etree.Element(
             'GetOrderByPartnerOrderID',
