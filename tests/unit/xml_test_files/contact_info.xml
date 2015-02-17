@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <m:AdminContact xmlns:m="http://api.geotrust.com/webtrust/query">
+        <m:FirstName>John</m:FirstName>
+        <m:LastName>Doe</m:LastName>
+        <m:Phone>2103122400</m:Phone>
+        <m:Email>someone@email.com</m:Email>
+        <m:Title>Caesar</m:Title>
+    </m:AdminContact>

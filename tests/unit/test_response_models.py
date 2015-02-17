@@ -1,5 +1,4 @@
 from __future__ import absolute_import, division, print_function
-from lxml import etree
 
 from symantecssl import utils
 from symantecssl.models import OrderContacts, ContactInfo
@@ -8,25 +7,15 @@ from symantecssl.response_models import (
     ModificationEvents, OrganizationInfo, OrderDetail, OrderDetails,
     OrderResponseHeader, QuickOrderResponse, QuickOrderResult, Vulnerabilities
 )
+from tests.unit import utils as test_utils
 
 
 class TestOrganizationInfo(object):
 
     def test_deserialize(self):
+        node = test_utils.create_node_from_file('organization_info.xml')
 
-        xml_node = etree.fromstring(
-            b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:OrganizationInfo xmlns:m="http://api.geotrust.com/webtrust/query">
-    <m:OrganizationName>MyOrg</m:OrganizationName>
-    <m:OrganizationAddress>
-        <m:City>San Antonio</m:City>
-        <m:Region>Texas</m:Region>
-        <m:Country>US</m:Country>
-    </m:OrganizationAddress>
-</m:OrganizationInfo>
-            """)
-
-        org_info = OrganizationInfo.deserialize(xml_node)
+        org_info = OrganizationInfo.deserialize(node)
 
         assert org_info.name == "MyOrg"
         assert org_info.city == "San Antonio"
@@ -37,35 +26,9 @@ class TestOrganizationInfo(object):
 class TestOrderContacts(object):
 
     def test_deserialize(self):
+        node = test_utils.create_node_from_file('order_contacts.xml')
 
-        xml_node = etree.fromstring(
-            b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:OrderContacts xmlns:m="http://api.geotrust.com/webtrust/query">
-    <m:AdminContact>
-        <m:FirstName>John</m:FirstName>
-        <m:LastName>Doe</m:LastName>
-        <m:Phone>2103122400</m:Phone>
-        <m:Email>someone@email.com</m:Email>
-        <m:Title>Caesar</m:Title>
-    </m:AdminContact>
-    <m:TechContact>
-        <m:FirstName>John</m:FirstName>
-        <m:LastName>Doe</m:LastName>
-        <m:Phone>2103122400</m:Phone>
-        <m:Email>someone@email.com</m:Email>
-        <m:Title>Caesar</m:Title>
-    </m:TechContact>
-    <m:BillingContact>
-        <m:FirstName>John</m:FirstName>
-        <m:LastName>Doe</m:LastName>
-        <m:Phone>2103122400</m:Phone>
-        <m:Email>someone@email.com</m:Email>
-        <m:Title>Caesar</m:Title>
-    </m:BillingContact>
-</m:OrderContacts>
-            """)
-
-        contacts = OrderContacts.deserialize(xml_node)
+        contacts = OrderContacts.deserialize(node)
 
         assert contacts.admin, ContactInfo
         assert contacts.tech, ContactInfo
@@ -75,19 +38,9 @@ class TestOrderContacts(object):
 class TestContactInfo(object):
 
     def test_deserialize(self):
+        node = test_utils.create_node_from_file('contact_info.xml')
 
-        xml_node = etree.fromstring(
-            b"""<?xml version="1.0" encoding="UTF-8"?>
-    <m:AdminContact xmlns:m="http://api.geotrust.com/webtrust/query">
-        <m:FirstName>John</m:FirstName>
-        <m:LastName>Doe</m:LastName>
-        <m:Phone>2103122400</m:Phone>
-        <m:Email>someone@email.com</m:Email>
-        <m:Title>Caesar</m:Title>
-    </m:AdminContact>
-            """)
-
-        contact = ContactInfo.deserialize(xml_node)
+        contact = ContactInfo.deserialize(node)
 
         assert contact.first_name == "John"
         assert contact.last_name == "Doe"
@@ -99,26 +52,9 @@ class TestContactInfo(object):
 class TestCertificateInfo(object):
 
     def test_deserialize(self):
-        xml_node = etree.fromstring(
-            b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:CertificateInfo xmlns:m="http://api.geotrust.com/webtrust/query">
-<m:CertificateStatus>ACTIVE</m:CertificateStatus>
-<m:StartDate>2014-11-20T12:48:39+00:00</m:StartDate>
-<m:EndDate>2014-11-28T23:02:59+00:00</m:EndDate>
-<m:CommonName>example.com</m:CommonName>
-<m:SerialNumber>1234</m:SerialNumber>
-<m:OrganizationalUnit>Org Unit 1</m:OrganizationalUnit>
-<m:OrganizationalUnit2>Org Unit 2</m:OrganizationalUnit2>
-<m:OrganizationalUnit3>Org Unit 3</m:OrganizationalUnit3>
-<m:WebServerType>other</m:WebServerType>
-<m:AlgorithmInfo>
-<m:SignatureHashAlgorithm>SHA1</m:SignatureHashAlgorithm>
-<m:SignatureEncryptionAlgorithm>RSA</m:SignatureEncryptionAlgorithm>
-</m:AlgorithmInfo>
-</m:CertificateInfo>
-            """)
+        node = test_utils.create_node_from_file('certificate_info.xml')
 
-        certificate_info = CertificateInfo.deserialize(xml_node)
+        certificate_info = CertificateInfo.deserialize(node)
         assert certificate_info.common_name == "example.com"
         assert certificate_info.status == "ACTIVE"
         assert certificate_info.hash_algorithm == "SHA1"
@@ -128,35 +64,9 @@ class TestCertificateInfo(object):
 class TestCertificate(object):
 
     def test_deserialize(self):
-        xml_node = etree.fromstring(
-            b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:Fulfillment xmlns:m="http://api.geotrust.com/webtrust/query">
-<m:CACertificates>
-<m:CACertificate>
-<m:Type>INTERMEDIATE</m:Type>
-<m:CACert>-----BEGIN CERTIFICATE-----
-DEF
------END CERTIFICATE-----</m:CACert>
-</m:CACertificate>
-<m:CACertificate>
-<m:Type>INTERMEDIATE</m:Type>
-<m:CACert>-----BEGIN CERTIFICATE-----
-MNO
------END CERTIFICATE-----</m:CACert>
-</m:CACertificate>
-<m:CACertificate>
-<m:Type>ROOT</m:Type>
-<m:CACert>-----BEGIN CERTIFICATE-----
-XYZ
------END CERTIFICATE-----</m:CACert>
-</m:CACertificate>
-</m:CACertificates>
-<m:ServerCertificate>Boo
-</m:ServerCertificate>
-</m:Fulfillment>
-            """)
+        node = test_utils.create_node_from_file('certificate.xml')
 
-        certificate = Certificate.deserialize(xml_node)
+        certificate = Certificate.deserialize(node)
         assert certificate.intermediates[0], IntermediateCertificate
         assert certificate.intermediates[1], IntermediateCertificate
         assert certificate.intermediates[2], IntermediateCertificate
@@ -165,17 +75,9 @@ XYZ
 class TestIntermediateCertificate(object):
 
     def test_deserialize(self):
-        xml_node = etree.fromstring(
-            b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:CACertificate xmlns:m="http://api.geotrust.com/webtrust/query">
-<m:Type>INTERMEDIATE</m:Type>
-<m:CACert>-----BEGIN CERTIFICATE-----
-DEF
------END CERTIFICATE-----</m:CACert>
-</m:CACertificate>
-            """)
+        node = test_utils.create_node_from_file('intermediate_certificate.xml')
 
-        intermediate = IntermediateCertificate.deserialize(xml_node)
+        intermediate = IntermediateCertificate.deserialize(node)
         assert intermediate.type == "INTERMEDIATE"
         assert intermediate.cert == """-----BEGIN CERTIFICATE-----
 DEF
@@ -186,39 +88,18 @@ DEF
 class TestModificationEvents(object):
 
     def test_deserialize(self):
-        xml_node = etree.fromstring(
-            b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:ModificationEvents xmlns:m="http://api.geotrust.com/webtrust/query">
-<m:ModificationEvent>
-<m:ModificationEventID>21612526</m:ModificationEventID>
-<m:ModificationEventName>Order Created</m:ModificationEventName>
-<m:ModificationTimestamp>2014-08-05T15:05:33+00:00</m:ModificationTimestamp>
-</m:ModificationEvent>
-<m:ModificationEvent>
-<m:ModificationEventID>21612556</m:ModificationEventID>
-<m:ModificationEventName>Approver Rejected</m:ModificationEventName>
-<m:ModificationTimestamp>2014-08-05T15:05:33+00:00</m:ModificationTimestamp>
-</m:ModificationEvent>
-</m:ModificationEvents>
-        """)
+        node = test_utils.create_node_from_file('mod_events.xml')
 
-        modifications = ModificationEvents.deserialize(xml_node)
+        modifications = ModificationEvents.deserialize(node)
         assert len(modifications) == 2
 
 
 class TestModificationEvent(object):
 
     def test_deserialize(self):
-        xml_node = etree.fromstring(
-            b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:ModificationEvent xmlns:m="http://api.geotrust.com/webtrust/query">
-<m:ModificationEventID>21612526</m:ModificationEventID>
-<m:ModificationEventName>Order Created</m:ModificationEventName>
-<m:ModificationTimestamp>2014-08-05T15:05:33+00:00</m:ModificationTimestamp>
-</m:ModificationEvent>
-        """)
+        node = test_utils.create_node_from_file('mod_event.xml')
 
-        event = ModificationEvent.deserialize(xml_node)
+        event = ModificationEvent.deserialize(node)
         assert event.event_name == "Order Created"
         assert event.time_stamp == "2014-08-05T15:05:33+00:00"
         assert event.mod_id == "21612526"
@@ -227,95 +108,9 @@ class TestModificationEvent(object):
 class TestOrderDetail(object):
 
     def test_deserialize_with_modification_events(self):
-        xml_node = etree.fromstring(
-            b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:OrderDetail xmlns:m="http://api.geotrust.com/webtrust/query">
-<m:ModificationEvents>
-<m:ModificationEvent>
-<m:ModificationEventID>21612199</m:ModificationEventID>
-<m:ModificationEventName>Order Created</m:ModificationEventName>
-<m:ModificationTimestamp>2014-08-05T14:44:15+00:00</m:ModificationTimestamp>
-</m:ModificationEvent>
-</m:ModificationEvents>
-<m:OrderInfo>
-<m:PartnerOrderID>eUogDVDrbdeRelyIzDyblFgWCOeeFc</m:PartnerOrderID>
-<m:GeoTrustOrderID>1825833</m:GeoTrustOrderID>
-<m:DomainName>testingsymantecssl.com</m:DomainName>
-<m:OrderDate>2014-08-05T14:44:15+00:00</m:OrderDate>
-<m:Price>35.0</m:Price>
-<m:Method>RESELLER</m:Method>
-<m:OrderStatusMajor>PENDING</m:OrderStatusMajor>
-<m:ValidityPeriod>15</m:ValidityPeriod>
-<m:ServerCount>1</m:ServerCount>
-<m:RenewalInd>Y</m:RenewalInd>
-<m:ProductCode>QUICKSSLPREMIUM</m:ProductCode>
-<m:OrderState>WF_DOMAIN_APPROVAL</m:OrderState>
-</m:OrderInfo>
-<m:QuickOrderDetail>
-<m:OrderStatusMinor>
-<m:OrderStatusMinorCode>ORDER_WAITING_FOR_APPROVAL</m:OrderStatusMinorCode>
-<m:OrderStatusMinorName>Order Waiting For Approval</m:OrderStatusMinorName>
-</m:OrderStatusMinor>
-<m:OrganizationInfo>
-<m:OrganizationName>MyOrg</m:OrganizationName>
-<m:OrganizationAddress>
-<m:City>San Antonio</m:City>
-<m:Region>Texas</m:Region>
-<m:Country>US</m:Country>
-</m:OrganizationAddress>
-</m:OrganizationInfo>
-<m:ApproverNotifiedDate>2014-08-05T14:44:15+00:00</m:ApproverNotifiedDate>
-<m:ApproverEmailAddress>admin@example.com</m:ApproverEmailAddress>
-</m:QuickOrderDetail>
-<m:OrderContacts>
-<m:AdminContact>
-<m:FirstName>John</m:FirstName>
-<m:LastName>Doe</m:LastName>
-<m:Phone>2103122400</m:Phone>
-<m:Email>someone@email.com</m:Email>
-<m:Title>Caesar</m:Title>
-</m:AdminContact>
-<m:TechContact>
-<m:FirstName>John</m:FirstName>
-<m:LastName>Doe</m:LastName>
-<m:Phone>2103122400</m:Phone>
-<m:Email>someone@email.com</m:Email>
-<m:Title>Caesar</m:Title>
-</m:TechContact>
-<m:BillingContact>
-<m:FirstName>John</m:FirstName>
-<m:LastName>Doe</m:LastName>
-<m:Phone>2103122400</m:Phone>
-<m:Email>someone@email.com</m:Email>
-<m:Title>Caesar</m:Title>
-</m:BillingContact>
-</m:OrderContacts>
-<m:Fulfillment>
-<m:CACertificates>
-<m:CACertificate>
-<m:Type>INTERMEDIATE</m:Type>
-<m:CACert>
------BEGIN CERTIFICATE-----
------END CERTIFICATE-----
-</m:CACert>
-</m:CACertificate>
-<m:CACertificate>
-<m:Type>ROOT</m:Type>
-<m:CACert>
------BEGIN CERTIFICATE-----
------END CERTIFICATE-----
-</m:CACert>
-</m:CACertificate>
-</m:CACertificates>
-<m:IconScript>
-</m:IconScript>
-</m:Fulfillment>
-<m:AuthenticationComments />
-<m:AuthenticationStatuses />
-</m:OrderDetail>
-            """)
+        node = test_utils.create_node_from_file('order_detail.xml')
 
-        order_detail = OrderDetail.deserialize(xml_node)
+        order_detail = OrderDetail.deserialize(node)
         assert order_detail.status_code == "ORDER_WAITING_FOR_APPROVAL"
         assert order_detail.status_name == "Order Waiting For Approval"
         assert order_detail.approver_email == "admin@example.com"
@@ -324,187 +119,17 @@ class TestOrderDetail(object):
         assert order_detail.modified_events, ModificationEvents
 
     def test_deserialize_with_vulnerabilities(self):
-        xml_node = etree.fromstring(
-            b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:OrderDetail xmlns:m="http://api.geotrust.com/webtrust/query">
-<m:ModificationEvents>
-<m:ModificationEvent>
-<m:ModificationEventID>21612199</m:ModificationEventID>
-<m:ModificationEventName>Order Created</m:ModificationEventName>
-<m:ModificationTimestamp>2014-08-05T14:44:15+00:00</m:ModificationTimestamp>
-</m:ModificationEvent>
-</m:ModificationEvents>
-<m:OrderInfo>
-<m:PartnerOrderID>eUogDVDrbdeRelyIzDyblFgWCOeeFc</m:PartnerOrderID>
-<m:GeoTrustOrderID>1825833</m:GeoTrustOrderID>
-<m:DomainName>testingsymantecssl.com</m:DomainName>
-<m:OrderDate>2014-08-05T14:44:15+00:00</m:OrderDate>
-<m:Price>35.0</m:Price>
-<m:Method>RESELLER</m:Method>
-<m:OrderStatusMajor>PENDING</m:OrderStatusMajor>
-<m:ValidityPeriod>15</m:ValidityPeriod>
-<m:ServerCount>1</m:ServerCount>
-<m:RenewalInd>Y</m:RenewalInd>
-<m:ProductCode>QUICKSSLPREMIUM</m:ProductCode>
-<m:OrderState>WF_DOMAIN_APPROVAL</m:OrderState>
-</m:OrderInfo>
-<m:Vulnerabilities>
-<m:Vulnerability>
-<m:Severity>1</m:Severity>
-<m:NumberFound>1</m:NumberFound>
-</m:Vulnerability>
-</m:Vulnerabilities>
-<m:QuickOrderDetail>
-<m:OrderStatusMinor>
-<m:OrderStatusMinorCode>ORDER_WAITING_FOR_APPROVAL</m:OrderStatusMinorCode>
-<m:OrderStatusMinorName>Order Waiting For Approval</m:OrderStatusMinorName>
-</m:OrderStatusMinor>
-<m:OrganizationInfo>
-<m:OrganizationName>MyOrg</m:OrganizationName>
-<m:OrganizationAddress>
-<m:City>San Antonio</m:City>
-<m:Region>Texas</m:Region>
-<m:Country>US</m:Country>
-</m:OrganizationAddress>
-</m:OrganizationInfo>
-<m:ApproverNotifiedDate>2014-08-05T14:44:15+00:00</m:ApproverNotifiedDate>
-<m:ApproverEmailAddress>admin@example.com</m:ApproverEmailAddress>
-</m:QuickOrderDetail>
-<m:OrderContacts>
-<m:AdminContact>
-<m:FirstName>John</m:FirstName>
-<m:LastName>Doe</m:LastName>
-<m:Phone>2103122400</m:Phone>
-<m:Email>someone@email.com</m:Email>
-<m:Title>Caesar</m:Title>
-</m:AdminContact>
-<m:TechContact>
-<m:FirstName>John</m:FirstName>
-<m:LastName>Doe</m:LastName>
-<m:Phone>2103122400</m:Phone>
-<m:Email>someone@email.com</m:Email>
-<m:Title>Caesar</m:Title>
-</m:TechContact>
-<m:BillingContact>
-<m:FirstName>John</m:FirstName>
-<m:LastName>Doe</m:LastName>
-<m:Phone>2103122400</m:Phone>
-<m:Email>someone@email.com</m:Email>
-<m:Title>Caesar</m:Title>
-</m:BillingContact>
-</m:OrderContacts>
-<m:Fulfillment>
-<m:CACertificates>
-<m:CACertificate>
-<m:Type>INTERMEDIATE</m:Type>
-<m:CACert>
------BEGIN CERTIFICATE-----
------END CERTIFICATE-----
-</m:CACert>
-</m:CACertificate>
-<m:CACertificate>
-<m:Type>ROOT</m:Type>
-<m:CACert>
------BEGIN CERTIFICATE-----
------END CERTIFICATE-----
-</m:CACert>
-</m:CACertificate>
-</m:CACertificates>
-<m:IconScript>
-</m:IconScript>
-</m:Fulfillment>
-<m:AuthenticationComments />
-<m:AuthenticationStatuses />
-</m:OrderDetail>
-            """)
+        node = test_utils.create_node_from_file('order_detail_with_vuln.xml')
 
-        order_detail = OrderDetail.deserialize(xml_node)
+        order_detail = OrderDetail.deserialize(node)
 
         assert order_detail.vulnerabilities, Vulnerabilities
 
     def test_deserialize_without_modification_events(self):
-        xml_node = etree.fromstring(
-            b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:OrderDetail xmlns:m="http://api.geotrust.com/webtrust/query">
-<m:OrderInfo>
-<m:PartnerOrderID>eUogDVDrbdeRelyIzDyblFgWCOeeFc</m:PartnerOrderID>
-<m:GeoTrustOrderID>1825833</m:GeoTrustOrderID>
-<m:DomainName>testingsymantecssl.com</m:DomainName>
-<m:OrderDate>2014-08-05T14:44:15+00:00</m:OrderDate>
-<m:Price>35.0</m:Price>
-<m:Method>RESELLER</m:Method>
-<m:OrderStatusMajor>PENDING</m:OrderStatusMajor>
-<m:ValidityPeriod>15</m:ValidityPeriod>
-<m:ServerCount>1</m:ServerCount>
-<m:RenewalInd>Y</m:RenewalInd>
-<m:ProductCode>QUICKSSLPREMIUM</m:ProductCode>
-<m:OrderState>WF_DOMAIN_APPROVAL</m:OrderState>
-</m:OrderInfo>
-<m:QuickOrderDetail>
-<m:OrderStatusMinor>
-<m:OrderStatusMinorCode>ORDER_WAITING_FOR_APPROVAL</m:OrderStatusMinorCode>
-<m:OrderStatusMinorName>Order Waiting For Approval</m:OrderStatusMinorName>
-</m:OrderStatusMinor>
-<m:OrganizationInfo>
-<m:OrganizationName>MyOrg</m:OrganizationName>
-<m:OrganizationAddress>
-<m:City>San Antonio</m:City>
-<m:Region>Texas</m:Region>
-<m:Country>US</m:Country>
-</m:OrganizationAddress>
-</m:OrganizationInfo>
-<m:ApproverNotifiedDate>2014-08-05T14:44:15+00:00</m:ApproverNotifiedDate>
-<m:ApproverEmailAddress>admin@example.com</m:ApproverEmailAddress>
-</m:QuickOrderDetail>
-<m:OrderContacts>
-<m:AdminContact>
-<m:FirstName>John</m:FirstName>
-<m:LastName>Doe</m:LastName>
-<m:Phone>2103122400</m:Phone>
-<m:Email>someone@email.com</m:Email>
-<m:Title>Caesar</m:Title>
-</m:AdminContact>
-<m:TechContact>
-<m:FirstName>John</m:FirstName>
-<m:LastName>Doe</m:LastName>
-<m:Phone>2103122400</m:Phone>
-<m:Email>someone@email.com</m:Email>
-<m:Title>Caesar</m:Title>
-</m:TechContact>
-<m:BillingContact>
-<m:FirstName>John</m:FirstName>
-<m:LastName>Doe</m:LastName>
-<m:Phone>2103122400</m:Phone>
-<m:Email>someone@email.com</m:Email>
-<m:Title>Caesar</m:Title>
-</m:BillingContact>
-</m:OrderContacts>
-<m:Fulfillment>
-<m:CACertificates>
-<m:CACertificate>
-<m:Type>INTERMEDIATE</m:Type>
-<m:CACert>
------BEGIN CERTIFICATE-----
------END CERTIFICATE-----
-</m:CACert>
-</m:CACertificate>
-<m:CACertificate>
-<m:Type>ROOT</m:Type>
-<m:CACert>
------BEGIN CERTIFICATE-----
------END CERTIFICATE-----
-</m:CACert>
-</m:CACertificate>
-</m:CACertificates>
-<m:IconScript>
-</m:IconScript>
-</m:Fulfillment>
-<m:AuthenticationComments />
-<m:AuthenticationStatuses />
-</m:OrderDetail>
-            """)
-
-        order_detail = OrderDetail.deserialize(xml_node)
+        node = test_utils.create_node_from_file(
+            'order_detail_no_mod_event.xml'
+        )
+        order_detail = OrderDetail.deserialize(node)
         assert order_detail.status_code == "ORDER_WAITING_FOR_APPROVAL"
         assert order_detail.status_name == "Order Waiting For Approval"
         assert order_detail.approver_email == "admin@example.com"
@@ -515,95 +140,9 @@ class TestOrderDetail(object):
 class TestOrderDetails(object):
 
     def test_deserialize(self):
-        xml_node = etree.fromstring(
-            b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:OrderDetails xmlns:m="http://api.geotrust.com/webtrust/query">
-<m:OrderDetail>
-<m:ModificationEvents>
-<m:ModificationEvent>
-<m:ModificationEventID>21612199</m:ModificationEventID>
-<m:ModificationEventName>Order Created</m:ModificationEventName>
-<m:ModificationTimestamp>2014-08-05T14:44:15+00:00</m:ModificationTimestamp>
-</m:ModificationEvent>
-</m:ModificationEvents>
-<m:OrderInfo>
-<m:PartnerOrderID>eUogDVDrbdeRelyIzDyblFgWCOeeFc</m:PartnerOrderID>
-<m:GeoTrustOrderID>1825833</m:GeoTrustOrderID>
-<m:DomainName>testingsymantecssl.com</m:DomainName>
-<m:OrderDate>2014-08-05T14:44:15+00:00</m:OrderDate>
-<m:Price>35.0</m:Price>
-<m:Method>RESELLER</m:Method>
-<m:OrderStatusMajor>PENDING</m:OrderStatusMajor>
-<m:ValidityPeriod>15</m:ValidityPeriod>
-<m:ServerCount>1</m:ServerCount>
-<m:RenewalInd>Y</m:RenewalInd>
-<m:ProductCode>QUICKSSLPREMIUM</m:ProductCode>
-<m:OrderState>WF_DOMAIN_APPROVAL</m:OrderState>
-</m:OrderInfo>
-<m:QuickOrderDetail>
-<m:OrderStatusMinor>
-<m:OrderStatusMinorCode>ORDER_WAITING_FOR_APPROVAL</m:OrderStatusMinorCode>
-<m:OrderStatusMinorName>Order Waiting For Approval</m:OrderStatusMinorName>
-</m:OrderStatusMinor>
-<m:OrganizationInfo>
-<m:OrganizationName>MyOrg</m:OrganizationName>
-<m:OrganizationAddress>
-<m:City>San Antonio</m:City>
-<m:Region>Texas</m:Region>
-<m:Country>US</m:Country>
-</m:OrganizationAddress>
-</m:OrganizationInfo>
-<m:ApproverNotifiedDate>2014-08-05T14:44:15+00:00</m:ApproverNotifiedDate>
-<m:ApproverEmailAddress>admin@example.com</m:ApproverEmailAddress>
-</m:QuickOrderDetail>
-<m:OrderContacts>
-<m:AdminContact>
-<m:FirstName>John</m:FirstName>
-<m:LastName>Doe</m:LastName>
-<m:Phone>2103122400</m:Phone>
-<m:Email>someone@email.com</m:Email>
-<m:Title>Caesar</m:Title>
-</m:AdminContact>
-<m:TechContact>
-<m:FirstName>John</m:FirstName>
-<m:LastName>Doe</m:LastName>
-<m:Phone>2103122400</m:Phone>
-<m:Email>someone@email.com</m:Email>
-<m:Title>Caesar</m:Title>
-</m:TechContact>
-<m:BillingContact>
-<m:FirstName>John</m:FirstName>
-<m:LastName>Doe</m:LastName>
-<m:Phone>2103122400</m:Phone>
-<m:Email>someone@email.com</m:Email>
-<m:Title>Caesar</m:Title>
-</m:BillingContact>
-</m:OrderContacts>
-<m:Fulfillment>
-<m:CACertificates>
-<m:CACertificate>
-<m:Type>INTERMEDIATE</m:Type>
-<m:CACert>
------BEGIN CERTIFICATE----- -----END CERTIFICATE-----
-</m:CACert>
-</m:CACertificate>
-<m:CACertificate>
-<m:Type>ROOT</m:Type>
-<m:CACert>
------BEGIN CERTIFICATE----- -----END CERTIFICATE-----
-</m:CACert>
-</m:CACertificate>
-</m:CACertificates>
-<m:IconScript>
-</m:IconScript>
-</m:Fulfillment>
-<m:AuthenticationComments />
-<m:AuthenticationStatuses />
-</m:OrderDetail>
-</m:OrderDetails>
-            """)
+        node = test_utils.create_node_from_file('order_details.xml')
 
-        order_details = OrderDetails.deserialize(xml_node)
+        order_details = OrderDetails.deserialize(node)
         assert len(order_details) == 1
 
 
@@ -619,38 +158,17 @@ class TestGetElementText(object):
 class TestQuickOrderResponse(object):
 
     def test_deserialize(self):
-        xml_node = etree.fromstring(b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:QuickOrderResponse xmlns:m="http://api.geotrust.com/webtrust/order">
-<m:QuickOrderResult>
-<m:OrderResponseHeader>
-<m:PartnerOrderID>04201988</m:PartnerOrderID>
-<m:SuccessCode>0</m:SuccessCode>
-<m:Timestamp>2015-01-29T20:42:05.447+00:00</m:Timestamp>
-</m:OrderResponseHeader>
-<m:GeoTrustOrderID>1912794</m:GeoTrustOrderID>
-</m:QuickOrderResult>
-</m:QuickOrderResponse>
-        """)
+        node = test_utils.create_node_from_file('quick_order_response.xml')
 
-        order_response = QuickOrderResponse.deserialize(xml_node)
+        order_response = QuickOrderResponse.deserialize(node)
         assert type(order_response) == QuickOrderResponse
 
 
 class TestQuickOrderResult(object):
 
     def test_deserialize(self):
-        xml_node = etree.fromstring(b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:QuickOrderResult xmlns:m="http://api.geotrust.com/webtrust/order">
-<m:OrderResponseHeader>
-<m:PartnerOrderID>04201988</m:PartnerOrderID>
-<m:SuccessCode>0</m:SuccessCode>
-<m:Timestamp>2015-01-29T20:42:05.447+00:00</m:Timestamp>
-</m:OrderResponseHeader>
-<m:GeoTrustOrderID>1912794</m:GeoTrustOrderID>
-</m:QuickOrderResult>
-        """)
-
-        order_result = QuickOrderResult.deserialize(xml_node)
+        node = test_utils.create_node_from_file('quick_order_result.xml')
+        order_result = QuickOrderResult.deserialize(node)
 
         assert order_result.order_id == '1912794'
 
@@ -658,14 +176,8 @@ class TestQuickOrderResult(object):
 class TestOrderResponseHeader(object):
 
     def test_deserialize(self):
-        xml_node = etree.fromstring(b"""<?xml version="1.0" encoding="UTF-8"?>
-<m:OrderResponseHeader xmlns:m="http://api.geotrust.com/webtrust/order">
-<m:PartnerOrderID>04201988</m:PartnerOrderID>
-<m:SuccessCode>0</m:SuccessCode>
-<m:Timestamp>2015-01-29T20:42:05.447+00:00</m:Timestamp>
-</m:OrderResponseHeader>
-        """)
+        node = test_utils.create_node_from_file('order_response_header.xml')
 
-        response = OrderResponseHeader.deserialize(xml_node)
+        response = OrderResponseHeader.deserialize(node)
         assert response.success_code == '0'
         assert response.partner_order_id == '04201988'

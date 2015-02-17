@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <m:Fulfillment xmlns:m="http://api.geotrust.com/webtrust/query">
+    <m:CACertificates>
+        <m:CACertificate>
+            <m:Type>INTERMEDIATE</m:Type>
+            <m:CACert>-----BEGIN CERTIFICATE-----
+            DEF
+            -----END CERTIFICATE-----</m:CACert>
+        </m:CACertificate>
+        <m:CACertificate>
+            <m:Type>INTERMEDIATE</m:Type>
+            <m:CACert>-----BEGIN CERTIFICATE-----
+            MNO
+            -----END CERTIFICATE-----</m:CACert>
+        </m:CACertificate>
+        <m:CACertificate>
+            <m:Type>ROOT</m:Type>
+            <m:CACert>-----BEGIN CERTIFICATE-----
+            XYZ
+            -----END CERTIFICATE-----</m:CACert>
+        </m:CACertificate>
+    </m:CACertificates>
+    <m:ServerCertificate>Boo</m:ServerCertificate>
+</m:Fulfillment>

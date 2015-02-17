@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<m:OrderContacts xmlns:m="http://api.geotrust.com/webtrust/query">
+    <m:AdminContact>
+        <m:FirstName>John</m:FirstName>
+        <m:LastName>Doe</m:LastName>
+        <m:Phone>2103122400</m:Phone>
+        <m:Email>someone@email.com</m:Email>
+        <m:Title>Caesar</m:Title>
+    </m:AdminContact>
+    <m:TechContact>
+        <m:FirstName>John</m:FirstName>
+        <m:LastName>Doe</m:LastName>
+        <m:Phone>2103122400</m:Phone>
+        <m:Email>someone@email.com</m:Email>
+        <m:Title>Caesar</m:Title>
+    </m:TechContact>
+    <m:BillingContact>
+        <m:FirstName>John</m:FirstName>
+        <m:LastName>Doe</m:LastName>
+        <m:Phone>2103122400</m:Phone>
+        <m:Email>someone@email.com</m:Email>
+        <m:Title>Caesar</m:Title>
+    </m:BillingContact>
+</m:OrderContacts>

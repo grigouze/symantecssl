@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <m:CertificateInfo xmlns:m="http://api.geotrust.com/webtrust/query">
+        <m:CertificateStatus>ACTIVE</m:CertificateStatus>
+        <m:StartDate>2014-11-20T12:48:39+00:00</m:StartDate>
+        <m:EndDate>2014-11-28T23:02:59+00:00</m:EndDate>
+        <m:CommonName>example.com</m:CommonName>
+        <m:SerialNumber>1234</m:SerialNumber>
+        <m:OrganizationalUnit>Org Unit 1</m:OrganizationalUnit>
+        <m:OrganizationalUnit2>Org Unit 2</m:OrganizationalUnit2>
+        <m:OrganizationalUnit3>Org Unit 3</m:OrganizationalUnit3>
+        <m:WebServerType>other</m:WebServerType>
+        <m:AlgorithmInfo>
+            <m:SignatureHashAlgorithm>SHA1</m:SignatureHashAlgorithm>
+            <m:SignatureEncryptionAlgorithm>RSA</m:SignatureEncryptionAlgorithm>
+        </m:AlgorithmInfo>
+    </m:CertificateInfo>
