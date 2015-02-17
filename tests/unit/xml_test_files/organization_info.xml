@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<m:OrganizationInfo xmlns:m="http://api.geotrust.com/webtrust/query">
+    <m:OrganizationName>MyOrg</m:OrganizationName>
+    <m:OrganizationAddress>
+        <m:City>San Antonio</m:City>
+        <m:Region>Texas</m:Region>
+        <m:Country>US</m:Country>
+    </m:OrganizationAddress>
+</m:OrganizationInfo>
