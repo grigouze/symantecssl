@@ -3,14 +3,6 @@ from lxml import etree
 
 from symantecssl import utils
 
-NS = {
-    'm': 'http://api.geotrust.com/webtrust/query'
-}
-
-ONS = {
-    'm': 'http://api.geotrust.com/webtrust/order'
-}
-
 
 class OrderContacts(object):
 
@@ -29,9 +21,9 @@ class OrderContacts(object):
         :return: parsed order contacts information response.
         """
         contacts = OrderContacts()
-        admin_node = xml_node.find('.//m:AdminContact', NS)
-        tech_node = xml_node.find('.//m:TechContact', NS)
-        billing_node = xml_node.find('.//m:BillingContact', NS)
+        admin_node = xml_node.find('.//m:AdminContact', utils.NS)
+        tech_node = xml_node.find('.//m:TechContact', utils.NS)
+        billing_node = xml_node.find('.//m:BillingContact', utils.NS)
 
         contacts.admin = ContactInfo.deserialize(admin_node)
         contacts.tech = ContactInfo.deserialize(tech_node)
@@ -78,19 +70,19 @@ class ContactInfo(object):
         """
         contact = ContactInfo()
         contact.first_name = utils.get_element_text(
-            xml_node.find('.//m:FirstName', NS)
+            xml_node.find('.//m:FirstName', utils.NS)
         )
         contact.last_name = utils.get_element_text(
-            xml_node.find('.//m:LastName', NS)
+            xml_node.find('.//m:LastName', utils. NS)
         )
         contact.phone = utils.get_element_text(
-            xml_node.find('.//m:Phone', NS)
+            xml_node.find('.//m:Phone', utils.NS)
         )
         contact.email = utils.get_element_text(
-            xml_node.find('.//m:Email', NS)
+            xml_node.find('.//m:Email', utils.NS)
         )
         contact.title = utils.get_element_text(
-            xml_node.find('.//m:Title', NS)
+            xml_node.find('.//m:Title', utils. NS)
         )
 
         return contact

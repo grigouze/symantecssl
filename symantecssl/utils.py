@@ -1,6 +1,18 @@
 from __future__ import absolute_import, division, print_function
 from lxml import etree
 
+NS = {
+    'm': 'http://api.geotrust.com/webtrust/query'
+}
+
+ONS = {
+    'm': 'http://api.geotrust.com/webtrust/order'
+}
+
+SOAP_NS = {
+    'soap': 'http://schemas.xmlsoap.org/soap/envelope/'
+}
+
 
 def get_element_text(element):
     """Checks if element is NoneType.

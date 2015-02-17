@@ -6,19 +6,6 @@ from symantecssl.response_models import (
     OrderDetails, OrderDetail, OrderContacts, QuickOrderResponse
 )
 
-# Global Dict to be moved out, will carry namespaces for parsing
-NS = {
-    'm': 'http://api.geotrust.com/webtrust/query'
-}
-
-ONS = {
-    'm': 'http://api.geotrust.com/webtrust/order'
-}
-
-SOAP_NS = {
-    'soap': 'http://schemas.xmlsoap.org/soap/envelope/'
-}
-
 
 class ApproverEmail(object):
 
@@ -57,12 +44,12 @@ class RequestEnvelope(object):
 
         root = etree.Element(
             "{http://schemas.xmlsoap.org/soap/envelope/}Envelope",
-            nsmap=SOAP_NS
+            nsmap=utils.SOAP_NS
         )
 
         body = etree.SubElement(
             root, "{http://schemas.xmlsoap.org/soap/envelope/}Body",
-            nsmap=SOAP_NS
+            nsmap=utils.SOAP_NS
         )
         request_model = self.request_model.serialize()
         body.append(request_model)
@@ -408,15 +395,14 @@ class GetModifiedOrderRequest(Request):
 
         request = etree.SubElement(root, 'Request')
 
-        from_date_ele = etree.Element('FromDate')
-        to_date_ele = etree.Element('ToDate')
-        from_date_ele.text = self.from_date
-        to_date_ele.text = self.to_date
-
         request.append(query_request_header)
         request.append(query_options)
-        request.append(from_date_ele)
-        request.append(to_date_ele)
+
+        for node, node_text in [
+            ('FromDate', self.from_date),
+            ('ToDate', self.to_date)
+        ]:
+            utils.create_subelement_with_text(request, node, node_text)
 
         return root
 
