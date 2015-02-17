@@ -104,26 +104,22 @@ class ContactInfo(object):
         """
 
         ele = etree.Element(element_name)
-
-        utils.create_subelement_with_text(ele, 'FirstName', self.first_name)
-        utils.create_subelement_with_text(ele, 'LastName', self.last_name)
-        utils.create_subelement_with_text(ele, 'Phone', self.phone)
-        utils.create_subelement_with_text(ele, 'Email', self.email)
-        utils.create_subelement_with_text(ele, 'Title', self.title)
-        utils.create_subelement_with_text(
-            ele, 'OrganizationName', self.org_name
-        )
-        utils.create_subelement_with_text(
-            ele, 'AddressLine1', self.address_line_one
-        )
-        utils.create_subelement_with_text(
-            ele, 'AddressLine2', self.address_line_two
-        )
-        utils.create_subelement_with_text(ele, 'City', self.city)
-        utils.create_subelement_with_text(ele, 'Region', self.region)
-        utils.create_subelement_with_text(ele, 'PostalCode', self.postal_code)
-        utils.create_subelement_with_text(ele, 'Country', self.country)
-        utils.create_subelement_with_text(ele, 'Fax', self.fax)
+        for node, node_text in [
+            ('FirstName', self.first_name),
+            ('LastName', self.last_name),
+            ('Phone', self.phone),
+            ('Email', self.email),
+            ('Title', self.title),
+            ('OrganizationName', self.org_name),
+            ('AddressLine1', self.address_line_one),
+            ('AddressLine2', self.address_line_two),
+            ('City', self.city),
+            ('Region', self.region),
+            ('PostalCode', self.postal_code),
+            ('Country', self.country),
+            ('Fax', self.fax)
+        ]:
+            utils.create_subelement_with_text(ele, node, node_text)
 
         return ele
 
