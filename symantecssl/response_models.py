@@ -3,19 +3,6 @@ from __future__ import absolute_import, division, print_function
 from symantecssl import utils
 from symantecssl.models import OrderContacts
 
-# Global Dict to be moved out, will carry namespaces for parsing
-NS = {
-    'm': 'http://api.geotrust.com/webtrust/query'
-}
-
-ONS = {
-    'm': 'http://api.geotrust.com/webtrust/order'
-}
-
-SOAP_NS = {
-    'soap': 'http://schemas.xmlsoap.org/soap/envelope/'
-}
-
 
 class OrderDetails(list):
 
@@ -31,7 +18,7 @@ class OrderDetails(list):
         :return: details in order detail section.
         """
         details = [OrderDetail.deserialize(node) for node in
-                   xml_node.findall('.//m:OrderDetail', NS)]
+                   xml_node.findall('.//m:OrderDetail', utils.NS)]
         return OrderDetails(details)
 
 
@@ -57,29 +44,33 @@ class OrderDetail(object):
         od = OrderDetail()
 
         od.status_code = utils.get_element_text(
-            xml_node.find('.//m:OrderStatusMinorCode', NS)
+            xml_node.find('.//m:OrderStatusMinorCode', utils.NS)
         )
         od.status_name = utils.get_element_text(
-            xml_node.find('.//m:OrderStatusMinorName', NS)
+            xml_node.find('.//m:OrderStatusMinorName', utils.NS)
         )
         od.approver_email = utils.get_element_text(
-            xml_node.find('.//m:ApproverEmailAddress', NS)
+            xml_node.find('.//m:ApproverEmailAddress', utils.NS)
         )
 
         # Deserialize Child nodes
-        org_info_node = xml_node.find('.//m:OrganizationInfo', NS)
-        org_contacts_node = xml_node.find('.//m:OrderContacts', NS)
+        org_info_node = xml_node.find('.//m:OrganizationInfo', utils.NS)
+        org_contacts_node = xml_node.find('.//m:OrderContacts', utils.NS)
         od.organization_info = OrganizationInfo.deserialize(org_info_node)
         od.organization_contacts = OrderContacts.deserialize(org_contacts_node)
 
-        if xml_node.find('.//m:ModificationEvents', NS) is not None:
-            mod_events_node = xml_node.find('.//m:ModificationEvents', NS)
+        if xml_node.find('.//m:ModificationEvents', utils.NS) is not None:
+            mod_events_node = xml_node.find(
+                './/m:ModificationEvents', utils.NS
+            )
             od.modified_events = (
                 ModificationEvents.deserialize(mod_events_node)
             )
 
-        if xml_node.find('.//m:Vulnerabilities', NS) is not None:
-            vulnerability_node = xml_node.find('.//m:Vulnerabilities', NS)
+        if xml_node.find('.//m:Vulnerabilities', utils.NS) is not None:
+            vulnerability_node = xml_node.find(
+                './/m:Vulnerabilities', utils.NS
+            )
             od.vulnerabilities = (
                 Vulnerabilities.deserialize(vulnerability_node)
             )
@@ -106,16 +97,16 @@ class OrganizationInfo(object):
         """
         org_info = OrganizationInfo()
         org_info.name = utils.get_element_text(
-            xml_node.find('.//m:OrganizationName', NS)
+            xml_node.find('.//m:OrganizationName', utils.NS)
         )
         org_info.city = utils.get_element_text(
-            xml_node.find('.//m:City', NS)
+            xml_node.find('.//m:City', utils.NS)
         )
         org_info.region = utils.get_element_text(
-            xml_node.find('.//m:Region', NS)
+            xml_node.find('.//m:Region', utils.NS)
         )
         org_info.country = utils.get_element_text(
-            xml_node.find('.//m:Country', NS)
+            xml_node.find('.//m:Country', utils.NS)
         )
 
         return org_info
@@ -139,16 +130,16 @@ class CertificateInfo(object):
         """
         cert_info = CertificateInfo()
         cert_info.common_name = utils.get_element_text(
-            xml_node.find('.//m:CommonName', NS)
+            xml_node.find('.//m:CommonName', utils.NS)
         )
         cert_info.status = utils.get_element_text(
-            xml_node.find('.//m:CertificateStatus', NS)
+            xml_node.find('.//m:CertificateStatus', utils.NS)
         )
         cert_info.hash_algorithm = utils.get_element_text(
-            xml_node.find('.//m:SignatureHashAlgorithm', NS)
+            xml_node.find('.//m:SignatureHashAlgorithm', utils.NS)
         )
         cert_info.encryption_algorithm = utils.get_element_text(
-            xml_node.find('.//m:SignatureEncryptionAlgorithm', NS)
+            xml_node.find('.//m:SignatureEncryptionAlgorithm', utils.NS)
         )
 
         return cert_info
@@ -170,9 +161,9 @@ class Certificate(object):
         """
         cert = Certificate()
         cert.server_cert = utils.get_element_text(
-            xml_node.find('.//m:ServerCertificate', NS)
+            xml_node.find('.//m:ServerCertificate', utils.NS)
         )
-        ca_certs = xml_node.find('.//m:CACertificates', NS)
+        ca_certs = xml_node.find('.//m:CACertificates', utils.NS)
 
         for x in ca_certs:
             cert.intermediates.append(IntermediateCertificate.deserialize(x))
@@ -197,10 +188,10 @@ class IntermediateCertificate(object):
 
         inter_info = IntermediateCertificate()
         inter_info.type = utils.get_element_text(
-            xml_node.find('.//m:Type', NS)
+            xml_node.find('.//m:Type', utils.NS)
         )
         inter_info.cert = utils.get_element_text(
-            xml_node.find('.//m:CACert', NS)
+            xml_node.find('.//m:CACert', utils.NS)
         )
 
         return inter_info
@@ -224,7 +215,7 @@ class ModificationEvents(list):
         response.
         """
         details = [ModificationEvent.deserialize(node) for node in
-                   xml_node.findall('.//m:ModificationEvent', NS)]
+                   xml_node.findall('.//m:ModificationEvent', utils.NS)]
         return ModificationEvents(details)
 
 
@@ -245,13 +236,13 @@ class ModificationEvent(object):
         me = ModificationEvent()
 
         me.mod_id = utils.get_element_text(
-            xml_node.find('.//m:ModificationEventID', NS)
+            xml_node.find('.//m:ModificationEventID', utils.NS)
         )
         me.event_name = utils.get_element_text(
-            xml_node.find('.//m:ModificationEventName', NS)
+            xml_node.find('.//m:ModificationEventName', utils.NS)
         )
         me.time_stamp = utils.get_element_text(
-            xml_node.find('.//m:ModificationTimestamp', NS)
+            xml_node.find('.//m:ModificationTimestamp', utils.NS)
         )
 
         return me
@@ -271,7 +262,7 @@ class Vulnerabilities(list):
         :return: parsed vulnerabilities response.
         """
         details = [Vulnerability.deserialize(node) for node in
-                   xml_node.findall('.//m:Vulnerability', NS)]
+                   xml_node.findall('.//m:Vulnerability', utils.NS)]
         return Vulnerabilities(details)
 
 
@@ -291,10 +282,10 @@ class Vulnerability(object):
         vuln = Vulnerability()
 
         vuln.mod_id = utils.get_element_text(
-            xml_node.find('.//m:Severity', NS)
+            xml_node.find('.//m:Severity', utils.NS)
         )
         vuln.event_name = utils.get_element_text(
-            xml_node.find('.//m:NumberFound', NS)
+            xml_node.find('.//m:NumberFound', utils.NS)
         )
 
         return vuln
@@ -320,7 +311,7 @@ class QuickOrderResult(object):
     def deserialize(cls, xml_node):
         result = QuickOrderResult()
         result.order_id = utils.get_element_text(
-            xml_node.find('.//m:GeoTrustOrderID', ONS)
+            xml_node.find('.//m:GeoTrustOrderID', utils.ONS)
         )
         result.order_response = OrderResponseHeader.deserialize(xml_node)
 
@@ -337,13 +328,13 @@ class OrderResponseHeader(object):
     def deserialize(cls, xml_node):
         order_response = OrderResponseHeader()
         order_response.partner_order_id = utils.get_element_text(
-            xml_node.find('.//m:PartnerOrderID', ONS)
+            xml_node.find('.//m:PartnerOrderID', utils.ONS)
         )
         order_response.success_code = utils.get_element_text(
-            xml_node.find('.//m:SuccessCode', ONS)
+            xml_node.find('.//m:SuccessCode', utils.ONS)
         )
         order_response.timestamp = utils.get_element_text(
-            xml_node.find('.//m:Timestamp', ONS)
+            xml_node.find('.//m:Timestamp', utils.ONS)
         )
 
         return order_response
