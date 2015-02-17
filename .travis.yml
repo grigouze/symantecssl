@@ -1,4 +1,7 @@
 language: python
+cache:
+  directories:
+  -  ~/.cache/pip
 python: 3.4
 
 env:
