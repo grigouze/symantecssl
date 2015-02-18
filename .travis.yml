@@ -28,7 +28,7 @@ install:
   - "if [[ $TRAVIS_SECURE_ENV_VARS == 'true' ]]; then export SYMANTEC_NO_BETAMAX=1; fi"
   # Before installation, we'll run ``pip wheel``, this will build wheels for
   # anything that doesn't already have one on PyPI.
-  - pip wheel tox coveralls
+  - pip wheel lxml betamax coverage tox coveralls pytest pretend sphinx
   # Actually install our dependencies now, this will pull from the directory
   # that the first command placed the Wheels into.
   - pip install tox coveralls
