@@ -447,13 +447,11 @@ class QuickOrderRequest(Request):
         )
         approver_email = self.approver_email.serialize()
 
-        request.append(order_request_header)
-        request.append(organization_info)
-        request.append(order_parameters)
-        request.append(admin_contact)
-        request.append(tech_contact)
-        request.append(billing_contact)
-        request.append(approver_email)
+        for item in [
+            order_request_header, organization_info, order_parameters,
+            admin_contact, tech_contact, billing_contact, approver_email
+        ]:
+            request.append(item)
 
         return root
 
