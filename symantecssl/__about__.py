@@ -15,4 +15,4 @@ __author__ = "Rackspace Barbican Team"
 __email__ = ""
 
 __license__ = "Apache License, Version 2.0"
-__copyright__ = "Copyright 2014 %s" % __author__
+__copyright__ = "Copyright 2014-2015 %s" % __author__

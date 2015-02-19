@@ -383,10 +383,7 @@ class GetModifiedOrderRequest(Request):
 
         :return: root element for the get modified order request
         """
-        root = etree.Element(
-            'GetModifiedOrders',
-            nsmap={None: 'http://api.geotrust.com/webtrust/query'}
-        )
+        root = etree.Element('GetModifiedOrders', nsmap=utils.NS)
 
         query_request_header = self.request_header.serialize(
             order_type=False
@@ -432,11 +429,7 @@ class QuickOrderRequest(Request):
         :return: root element of the QuickOrderRequest section
         """
 
-        root = etree.Element(
-            'QuickOrder',
-            nsmap={None: 'http://api.geotrust.com/webtrust/order'}
-        )
-
+        root = etree.Element('QuickOrder', nsmap=utils.NS)
         order_request_header = self.request_header.serialize(order_type=True)
 
         request = etree.SubElement(root, 'Request')
@@ -447,13 +440,11 @@ class QuickOrderRequest(Request):
         )
         approver_email = self.approver_email.serialize()
 
-        request.append(order_request_header)
-        request.append(organization_info)
-        request.append(order_parameters)
-        request.append(admin_contact)
-        request.append(tech_contact)
-        request.append(billing_contact)
-        request.append(approver_email)
+        for item in [
+            order_request_header, organization_info, order_parameters,
+            admin_contact, tech_contact, billing_contact, approver_email
+        ]:
+            request.append(item)
 
         return root
 
@@ -522,10 +513,7 @@ class GetOrderByPartnerOrderID(Request):
 
         :return: root element for the get order by partner order id
         """
-        root = etree.Element(
-            'GetOrderByPartnerOrderID',
-            nsmap={None: 'http://api.geotrust.com/webtrust/query'}
-        )
+        root = etree.Element('GetOrderByPartnerOrderID', nsmap=utils.NS)
 
         query_request_header = self.request_header.serialize(
             order_type=False
