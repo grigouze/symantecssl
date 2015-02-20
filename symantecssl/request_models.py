@@ -267,12 +267,98 @@ class OrderParameters(object):
         return root
 
 
+class ReissueEmail(object):
+
+    def __init__(self):
+        self.reissue_email = ''
+
+    def serialize(self):
+        """Serializes the ReissueEmail section for request.
+
+        :return: ele
+        """
+        ele = etree.Element('ReissueEmail')
+        ele.text = self.reissue_email
+
+        return ele
+
+
+class OrderChange(object):
+
+    def __init__(self):
+        self.change_type = ''
+        self.new_value = ''
+        self.old_value = ''
+
+    def serialize(self):
+        """Serialized the OrderChange section for request.
+
+        :return: root
+        """
+        root = etree.Element('OrderChange')
+        utils.create_subelement_with_text(root, 'ChangeType', self.change_type)
+        if self.new_value:
+            utils.create_subelement_with_text(root, 'NewValue', self.new_value)
+        if self.old_value:
+            utils.create_subelement_with_text(root, 'OldValue', self.old_value)
+
+        return root
+
+
+class OrderChanges(object):
+
+    def __init__(self):
+        self.add = []
+        self.delete = []
+        self.edit = []
+
+    def serialize(self,):
+        """Serializes the OrderChanges section for request.
+
+        :return: root
+        """
+        root = etree.Element('OrderChanges')
+        if self.add:
+            for san in self.add:
+                order_change = OrderChange()
+                order_change.change_type = 'Add_SAN'
+                order_change.new_value = san
+                root.append(order_change.serialize())
+
+        if self.delete:
+            for san in self.delete:
+                order_change = OrderChange()
+                order_change.change_type = 'Delete_SAN'
+                order_change.old_value = san
+                root.append(order_change.serialize())
+
+        if self.edit:
+            utils.create_subelement_with_text(root, 'ChangeType', 'Edit_SAN')
+            for old_alternate_name, new_alternate_name in self.edit:
+                order_change = OrderChange()
+                order_change.change_type = 'Edit_SAN'
+                order_change.old_value = old_alternate_name
+                order_change.new_value = new_alternate_name
+                root.append(order_change.serialize())
+
+        return root
+
+    @property
+    def has_changes(self):
+        """Checks if OrderChanges has any available changes for processing.
+
+        :return: True or False
+        """
+        return self.add or self.delete or self.edit
+
+
 class Request(object):
 
     def __init__(self):
         self.partner_code = ''
         self.username = ''
         self.password = ''
+        self.partner_order_id = ''
         self.from_date = ''
         self.to_date = ''
         self.request_header = RequestHeader()
@@ -363,6 +449,13 @@ class Request(object):
         self.query_options.vulnerability_scan_details = (
             vulnerability_scan_details)
         self.query_options.certificate_algorithm_info = cert_algorithm_info
+
+    def set_partner_order_id(self, partner_order_id):
+        """Sets the partner order ID for order retrieval.
+
+        :param partner_order_id: the partner order id from a previous order
+        """
+        self.partner_order_id = partner_order_id
 
 
 class GetModifiedOrderRequest(Request):
@@ -541,9 +634,69 @@ class GetOrderByPartnerOrderID(Request):
 
         return root
 
-    def set_partner_order_id(self, partner_order_id):
-        """Sets the partner order ID for order retrieval.
 
-        :param partner_order_id: the partner order id from a previous order
+class Reissue(Request):
+
+    def __init__(self):
+        super(Request, self).__init__()
+        self.response_model = None
+        self.order_parameters = OrderParameters()
+        self.order_changes = OrderChanges()
+        self.reissue_email = ReissueEmail()
+
+    def add_san(self, alternate_name):
+        """Adds SAN from original order.
+
+        :param alternate_name: the name to be added to reissue request
         """
-        self.partner_order_id = partner_order_id
+        self.order_changes.add.append(alternate_name)
+
+    def delete_san(self, alternate_name):
+        """Delete SAN from original order.
+
+        :param alternate_name: the name to be deleted from original order
+        """
+        self.order_changes.delete.append(alternate_name)
+
+    def edit_san(self, old_alternate_name, new_alternate_name):
+        """Edit SAN from original order to something new for reissue.
+
+        :param old_alternate_name: the name to be deleted from original order
+        :param new_alternate_name: the name to be added to reissue request
+        """
+        self.order_changes.edit.append(
+            (old_alternate_name, new_alternate_name)
+        )
+
+    def serialize(self):
+        """Serializes the Reissue request type.
+
+        The request model for the Reissue call in the Symantec SOAP XML API.
+        Serializes all related sections to this request model.
+
+        This will serialize the following:
+            Order Request Header
+            Order Parameters
+            Order Changes
+            Reissue Email
+
+        :return: root
+        """
+        root = etree.Element('Reissue', nsmap=utils.NS)
+        request = etree.SubElement(root, 'Request')
+        order_request_header = self.request_header.serialize(order_type=True)
+        order_parameters = self.order_parameters.serialize()
+        reissue_email = self.reissue_email.serialize()
+
+        for item in [
+            order_request_header, order_parameters, reissue_email
+        ]:
+            request.append(item)
+
+        if self.order_changes.has_changes:
+            changes = self.order_changes.serialize()
+            request.append(changes)
+
+        return root
+
+
