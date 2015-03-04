@@ -3,7 +3,8 @@ from lxml import etree
 
 from symantecssl import utils
 from symantecssl.response_models import (
-    OrderDetails, OrderDetail, OrderContacts, QuickOrderResponse
+    OrderDetails, OrderDetail, OrderContacts, QuickOrderResponse,
+    ReissueResponse
 )
 
 
@@ -226,14 +227,13 @@ class OrderParameters(object):
         self.csr = ''
         self.domain_name = ''
         self.order_partner_order_id = ''
-        self.renewal_indicator = ''
+        self.renewal_indicator = 'true'
         self.renewal_behavior = ''
-        self.server_count = ''
         self.signature_hash_algorithm = ''
         self.special_instructions = ''
-        self.valid_period = ''
+        self.valid_period = '12'
         self.web_server_type = ''
-        self.wildcard = ''
+        self.wildcard = 'false'
         self.dnsnames = ''
 
     def serialize(self):
@@ -249,7 +249,6 @@ class OrderParameters(object):
 
         for node, node_text in [
             ('ValidityPeriod', self.valid_period),
-            ('ServerCount', self.server_count),
             ('DomainName', self.domain_name),
             ('OriginalPartnerOrderID', self.order_partner_order_id),
             ('CSR', self.csr),
@@ -312,7 +311,7 @@ class OrderChanges(object):
         self.delete = []
         self.edit = []
 
-    def serialize(self,):
+    def serialize(self):
         """Serializes the OrderChanges section for request.
 
         :return: root
@@ -333,7 +332,6 @@ class OrderChanges(object):
                 root.append(order_change.serialize())
 
         if self.edit:
-            utils.create_subelement_with_text(root, 'ChangeType', 'Edit_SAN')
             for old_alternate_name, new_alternate_name in self.edit:
                 order_change = OrderChange()
                 order_change.change_type = 'Edit_SAN'
@@ -552,7 +550,7 @@ class QuickOrderRequest(Request):
 
     def set_order_parameters(
             self, csr, domain_name, partner_order_id, renewal_indicator,
-            renewal_behavior, server_count, hash_algorithm,
+            renewal_behavior, hash_algorithm,
             special_instructions, valid_period, web_server_type,
             wildcard='false', dns_names=None
     ):
@@ -587,7 +585,6 @@ class QuickOrderRequest(Request):
         self.order_parameters.order_partner_order_id = partner_order_id
         self.order_parameters.renewal_indicator = renewal_indicator
         self.order_parameters.renewal_behavior = renewal_behavior
-        self.order_parameters.server_count = server_count
         self.order_parameters.signature_hash_algorithm = hash_algorithm
         self.order_parameters.special_instructions = special_instructions
         self.order_parameters.valid_period = valid_period
@@ -638,8 +635,8 @@ class GetOrderByPartnerOrderID(Request):
 class Reissue(Request):
 
     def __init__(self):
-        super(Request, self).__init__()
-        self.response_model = None
+        super(Reissue, self).__init__()
+        self.response_model = ReissueResponse
         self.order_parameters = OrderParameters()
         self.order_changes = OrderChanges()
         self.reissue_email = ReissueEmail()
@@ -664,9 +661,8 @@ class Reissue(Request):
         :param old_alternate_name: the name to be deleted from original order
         :param new_alternate_name: the name to be added to reissue request
         """
-        self.order_changes.edit.append(
-            (old_alternate_name, new_alternate_name)
-        )
+        edits = (old_alternate_name, new_alternate_name)
+        self.order_changes.edit.append(edits)
 
     def serialize(self):
         """Serializes the Reissue request type.
@@ -682,7 +678,7 @@ class Reissue(Request):
 
         :return: root
         """
-        root = etree.Element('Reissue', nsmap=utils.NS)
+        root = etree.Element('Reissue', nsmap=utils.DEFAULT_ONS)
         request = etree.SubElement(root, 'Request')
         order_request_header = self.request_header.serialize(order_type=True)
         order_parameters = self.order_parameters.serialize()

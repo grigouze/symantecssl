@@ -338,3 +338,37 @@ class OrderResponseHeader(object):
         )
 
         return order_response
+
+
+class ReissueResponse(object):
+    def __init__(self):
+        self.result = ReissueResult()
+
+    @classmethod
+    def deserialize(cls, xml_node):
+        """Deserializes the reissue section in the response.
+
+        :param xml_node: XML node to be parsed. Expected to explicitly be
+        Reissue Response XML node.
+        :return: response. Parsed reissue response.
+        """
+        response = ReissueResponse()
+        response.result = ReissueResult.deserialize(xml_node)
+        return response
+
+
+class ReissueResult(object):
+    def __init__(self):
+        self.order_response = OrderResponseHeader()
+
+    @classmethod
+    def deserialize(cls, xml_node):
+        """Deserializes the reissue result section in the response.
+
+        :param xml_node: XML node to be parsed. Expected to explicitly be
+        ReissueResult XML node.
+        :return: result. Parsed reissue response.
+        """
+        result = ReissueResult()
+        result.order_response = OrderResponseHeader.deserialize(xml_node)
+        return result

@@ -13,6 +13,14 @@ SOAP_NS = {
     'soap': 'http://schemas.xmlsoap.org/soap/envelope/'
 }
 
+DEFAULT_NS = {
+    None: 'http://api.geotrust.com/webtrust/query'
+}
+
+DEFAULT_ONS = {
+    None: 'http://api.geotrust.com/webtrust/order'
+}
+
 
 def get_element_text(element):
     """Checks if element is NoneType.
