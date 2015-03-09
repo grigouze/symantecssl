@@ -274,7 +274,7 @@ class ReissueEmail(object):
     def serialize(self):
         """Serializes the ReissueEmail section for request.
 
-        :return: ele
+        :return: ele, reissue e-mail element to be added to xml request
         """
         ele = etree.Element('ReissueEmail')
         ele.text = self.reissue_email
@@ -292,7 +292,7 @@ class OrderChange(object):
     def serialize(self):
         """Serialized the OrderChange section for request.
 
-        :return: root
+        :return: root element to be added to xml request
         """
         root = etree.Element('OrderChange')
         utils.create_subelement_with_text(root, 'ChangeType', self.change_type)
@@ -314,7 +314,7 @@ class OrderChanges(object):
     def serialize(self):
         """Serializes the OrderChanges section for request.
 
-        :return: root
+        :return: root element to be added to xml request
         """
         root = etree.Element('OrderChanges')
         if self.add:
@@ -345,7 +345,7 @@ class OrderChanges(object):
     def has_changes(self):
         """Checks if OrderChanges has any available changes for processing.
 
-        :return: True or False
+        :return: True or False for order changes
         """
         return self.add or self.delete or self.edit
 
@@ -676,7 +676,7 @@ class Reissue(Request):
             Order Changes
             Reissue Email
 
-        :return: root
+        :return: root object for the reissue request xml object
         """
         root = etree.Element('Reissue', nsmap=utils.DEFAULT_ONS)
         request = etree.SubElement(root, 'Request')
@@ -684,9 +684,8 @@ class Reissue(Request):
         order_parameters = self.order_parameters.serialize()
         reissue_email = self.reissue_email.serialize()
 
-        for item in [
-            order_request_header, order_parameters, reissue_email
-        ]:
+        sections = [order_request_header, order_parameters, reissue_email]
+        for item in sections:
             request.append(item)
 
         if self.order_changes.has_changes:
