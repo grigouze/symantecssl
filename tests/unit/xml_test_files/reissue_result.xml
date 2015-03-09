@@ -1,0 +1,7 @@
+<m:ReissueResult xmlns:m="http://api.geotrust.com/webtrust/order">
+    <m:OrderResponseHeader>
+        <m:SuccessCode>0</m:SuccessCode>
+        <m:Timestamp>2015-03-09T15:29:57.841+00:00</m:Timestamp>
+    </m:OrderResponseHeader>
+    <m:GeoTrustOrderID>1934562</m:GeoTrustOrderID>
+</m:ReissueResult>

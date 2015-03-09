@@ -3,7 +3,7 @@ import datetime
 
 from symantecssl.models import ContactInfo
 from symantecssl.request_models import (
-    GetModifiedOrderRequest, GetOrderByPartnerOrderID,OrderQueryOptions,
+    GetModifiedOrderRequest, GetOrderByPartnerOrderID, OrderQueryOptions,
     OrderChanges, QuickOrderRequest, RequestHeader, RequestEnvelope, Reissue,
     ReissueEmail
 )

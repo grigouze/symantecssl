@@ -190,6 +190,7 @@ class TestReissueResponse(object):
         node = test_utils.create_node_from_file('reissue_response.xml')
 
         response = ReissueResponse.deserialize(node)
+        assert type(response) == ReissueResponse
 
 
 class TestReissueResult(object):
@@ -198,3 +199,4 @@ class TestReissueResult(object):
         node = test_utils.create_node_from_file('reissue_result.xml')
 
         response = ReissueResult.deserialize(node)
+        assert response.order_response.success_code == '0'

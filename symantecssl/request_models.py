@@ -694,5 +694,3 @@ class Reissue(Request):
             request.append(changes)
 
         return root
-
-
