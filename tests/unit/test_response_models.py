@@ -5,7 +5,8 @@ from symantecssl.models import OrderContacts, ContactInfo
 from symantecssl.response_models import (
     Certificate, CertificateInfo, IntermediateCertificate, ModificationEvent,
     ModificationEvents, OrganizationInfo, OrderDetail, OrderDetails,
-    OrderResponseHeader, QuickOrderResponse, QuickOrderResult, Vulnerabilities
+    OrderResponseHeader, QuickOrderResponse, QuickOrderResult, Vulnerabilities,
+    ReissueResponse, ReissueResult
 )
 from tests.unit import utils as test_utils
 
@@ -181,3 +182,21 @@ class TestOrderResponseHeader(object):
         response = OrderResponseHeader.deserialize(node)
         assert response.success_code == '0'
         assert response.partner_order_id == '04201988'
+
+
+class TestReissueResponse(object):
+
+    def test_deserialize(self):
+        node = test_utils.create_node_from_file('reissue_response.xml')
+
+        response = ReissueResponse.deserialize(node)
+        assert type(response) == ReissueResponse
+
+
+class TestReissueResult(object):
+
+    def test_deserialize(self):
+        node = test_utils.create_node_from_file('reissue_result.xml')
+
+        response = ReissueResult.deserialize(node)
+        assert response.order_response.success_code == '0'

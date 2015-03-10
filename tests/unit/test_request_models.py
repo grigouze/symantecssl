@@ -3,9 +3,11 @@ import datetime
 
 from symantecssl.models import ContactInfo
 from symantecssl.request_models import (
-    GetModifiedOrderRequest, GetOrderByPartnerOrderID,
-    OrderQueryOptions, QuickOrderRequest, RequestHeader, RequestEnvelope
+    GetModifiedOrderRequest, GetOrderByPartnerOrderID, OrderQueryOptions,
+    OrderChanges, QuickOrderRequest, RequestHeader, RequestEnvelope, Reissue,
+    ReissueEmail
 )
+from symantecssl import utils
 
 
 class TestRequestEnvelope(object):
@@ -189,14 +191,13 @@ class TestQuickOrderRequest(object):
             csr='Fake CSR',
             domain_name='example.com',
             partner_order_id='09182012',
-            renewal_indicator='false',
+            renewal_indicator=False,
             renewal_behavior='Thing',
-            server_count='1',
             hash_algorithm='SHA2-256',
             special_instructions='Go to Flamerock',
             valid_period='12',
             web_server_type='apacheopenssl',
-            wildcard='true',
+            wildcard=True,
             dns_names='www.email.com, www.example.com'
         )
         root = qor.serialize()
@@ -207,7 +208,6 @@ class TestQuickOrderRequest(object):
         assert root.find('.//OriginalPartnerOrderID').text == '09182012'
         assert root.find('.//RenewalIndicator').text == 'false'
         assert root.find('.//RenewalBehavior').text == 'Thing'
-        assert root.find('.//ServerCount').text == '1'
         assert root.find('.//SignatureHashAlgorithm').text == 'SHA2-256'
         assert root.find('.//SpecialInstructions').text == 'Go to Flamerock'
         assert root.find('.//ValidityPeriod').text == '12'
@@ -295,3 +295,139 @@ class TestGetOrderByPartnerOrderID(object):
         root = gopoid.serialize()
 
         assert root.find('.//PartnerOrderID').text == '2464'
+
+
+class TestReissue(object):
+
+    def test_serialize(self):
+
+        r = Reissue()
+        r.order_parameters.order_partner_order_id = '1989'
+        r.add_san('torgue.domain.com')
+        r.delete_san('jack.domain.com')
+        r.edit_san('box.domain.com', 'gear.domain.com')
+        root = r.serialize()
+
+        assert len(root.findall('.//ChangeType')) == 3
+        assert root.find('.//OriginalPartnerOrderID').text == '1989'
+
+    def test_serialize_without_changes(self):
+        r = Reissue()
+        r.order_parameters.csr = 'Scav'
+        root = r.serialize()
+
+        assert not root.findall('.//OrderChange')
+
+    def test_add_san(self):
+
+        r = Reissue()
+        r.add_san('handsome.domain.com')
+
+        assert r.order_changes.add[0] == 'handsome.domain.com'
+
+    def test_delete_san(self):
+
+        r = Reissue()
+        r.delete_san('siren.domain.com')
+
+        assert r.order_changes.delete[0] == 'siren.domain.com'
+
+    def test_edit_san(self):
+
+        r = Reissue()
+        r.edit_san('soldier.domain.com', 'sniper.domain.com')
+
+        assert r.order_changes.edit[0] == (
+            'soldier.domain.com', 'sniper.domain.com'
+        )
+
+
+class TestOrderChanges(object):
+
+    def test_serialize_with_add(self):
+        oc = OrderChanges()
+        oc.add = ['mechromancer.domain.com', 'assassin.domain.com']
+        root = oc.serialize()
+
+        add_types = root.findall('.//ChangeType')
+        add_values = root.findall('.//NewValue')
+
+        assert len(add_types) == 2
+        assert len(add_values) == 2
+        assert add_types[0].text == 'Add_SAN'
+        assert add_values[0].text == 'mechromancer.domain.com'
+
+    def test_serialize_with_delete(self):
+        oc = OrderChanges()
+        oc.delete = ['psycho.domain.com', 'gunzerker.domain.com']
+        root = oc.serialize()
+
+        delete_types = root.findall('.//ChangeType')
+        delete_values = root.findall('.//OldValue')
+
+        assert len(delete_types) == 2
+        assert len(delete_values) == 2
+        assert delete_types[0].text == 'Delete_SAN'
+        assert delete_values[0].text == 'psycho.domain.com'
+
+    def test_serialize_with_edit(self):
+        oc = OrderChanges()
+        oc.edit = [
+            ('gladiator.domain.com', 'lawbringer.domain.com'),
+            ('enforcer.domain.com', 'fragtrap.domain.com')
+        ]
+        root = oc.serialize()
+
+        edit_types = root.findall('.//ChangeType')
+        edit_old_values = root.findall('.//OldValue')
+        edit_new_values = root.findall('.//NewValue')
+
+        for item in [edit_types, edit_old_values, edit_new_values]:
+            assert len(item) == 2
+
+        assert edit_types[0].text == 'Edit_SAN'
+        assert edit_old_values[0].text == 'gladiator.domain.com'
+        assert edit_new_values[0].text == 'lawbringer.domain.com'
+        assert edit_old_values[1].text == 'enforcer.domain.com'
+        assert edit_new_values[1].text == 'fragtrap.domain.com'
+
+
+class TestReissueEmail(object):
+
+    def test_serialize(self):
+        re = ReissueEmail()
+        re.reissue_email = 'nisha@domain.com'
+        root = re.serialize()
+
+        assert root.text == 'nisha@domain.com'
+
+
+class TestHelperFunctions(object):
+
+    def test_true_bool_to_str(self):
+        value = True
+        default = True
+        new_string = utils._boolean_to_str(value, default)
+
+        assert new_string == 'true'
+
+    def test_false_bool_to_str(self):
+        value = False
+        default = True
+        new_string = utils._boolean_to_str(value, default)
+
+        assert new_string == 'false'
+
+    def test_none_bool_to_str(self):
+        value = None
+        default = True
+        new_string = utils._boolean_to_str(value, default)
+
+        assert new_string == 'true'
+
+    def test_junk_bool_to_str(self):
+        value = 'Scav'
+        default = False
+        new_string = utils._boolean_to_str(value, default)
+
+        assert new_string == 'false'

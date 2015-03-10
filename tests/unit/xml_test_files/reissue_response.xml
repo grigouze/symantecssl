@@ -1,0 +1,14 @@
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+    <env:Header/>
+    <env:Body>
+        <m:ReissueResponse xmlns:m="http://api.geotrust.com/webtrust/order">
+            <m:ReissueResult>
+                <m:OrderResponseHeader>
+                    <m:SuccessCode>0</m:SuccessCode>
+                    <m:Timestamp>2015-03-09T15:29:57.841+00:00</m:Timestamp>
+                </m:OrderResponseHeader>
+                <m:GeoTrustOrderID>1934562</m:GeoTrustOrderID>
+            </m:ReissueResult>
+        </m:ReissueResponse>
+    </env:Body>
+</env:Envelope>

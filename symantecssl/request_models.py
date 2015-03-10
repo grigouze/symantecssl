@@ -3,7 +3,8 @@ from lxml import etree
 
 from symantecssl import utils
 from symantecssl.response_models import (
-    OrderDetails, OrderDetail, OrderContacts, QuickOrderResponse
+    OrderDetails, OrderDetail, OrderContacts, QuickOrderResponse,
+    ReissueResponse
 )
 
 
@@ -226,14 +227,13 @@ class OrderParameters(object):
         self.csr = ''
         self.domain_name = ''
         self.order_partner_order_id = ''
-        self.renewal_indicator = ''
+        self.renewal_indicator = True
         self.renewal_behavior = ''
-        self.server_count = ''
         self.signature_hash_algorithm = ''
         self.special_instructions = ''
-        self.valid_period = ''
+        self.valid_period = '12'
         self.web_server_type = ''
-        self.wildcard = ''
+        self.wildcard = False
         self.dnsnames = ''
 
     def serialize(self):
@@ -247,18 +247,20 @@ class OrderParameters(object):
 
         root = etree.Element('OrderParameters')
 
+        renewal_indicator = utils._boolean_to_str(self.renewal_indicator, True)
+        wildcard = utils._boolean_to_str(self.wildcard, False)
+
         for node, node_text in [
             ('ValidityPeriod', self.valid_period),
-            ('ServerCount', self.server_count),
             ('DomainName', self.domain_name),
             ('OriginalPartnerOrderID', self.order_partner_order_id),
             ('CSR', self.csr),
             ('WebServerType', self.web_server_type),
-            ('RenewalIndicator', self.renewal_indicator),
+            ('RenewalIndicator', renewal_indicator),
             ('RenewalBehavior', self.renewal_behavior),
             ('SignatureHashAlgorithm', self.signature_hash_algorithm),
             ('SpecialInstructions', self.special_instructions),
-            ('WildCard', self.wildcard),
+            ('WildCard', wildcard),
             ('DNSNames', self.dnsnames)
 
         ]:
@@ -267,12 +269,97 @@ class OrderParameters(object):
         return root
 
 
+class ReissueEmail(object):
+
+    def __init__(self):
+        self.reissue_email = ''
+
+    def serialize(self):
+        """Serializes the ReissueEmail section for request.
+
+        :return: ele, reissue e-mail element to be added to xml request
+        """
+        ele = etree.Element('ReissueEmail')
+        ele.text = self.reissue_email
+
+        return ele
+
+
+class OrderChange(object):
+
+    def __init__(self):
+        self.change_type = ''
+        self.new_value = ''
+        self.old_value = ''
+
+    def serialize(self):
+        """Serialized the OrderChange section for request.
+
+        :return: root element to be added to xml request
+        """
+        root = etree.Element('OrderChange')
+        utils.create_subelement_with_text(root, 'ChangeType', self.change_type)
+        if self.new_value:
+            utils.create_subelement_with_text(root, 'NewValue', self.new_value)
+        if self.old_value:
+            utils.create_subelement_with_text(root, 'OldValue', self.old_value)
+
+        return root
+
+
+class OrderChanges(object):
+
+    def __init__(self):
+        self.add = []
+        self.delete = []
+        self.edit = []
+
+    def serialize(self):
+        """Serializes the OrderChanges section for request.
+
+        :return: root element to be added to xml request
+        """
+        root = etree.Element('OrderChanges')
+        if self.add:
+            for san in self.add:
+                order_change = OrderChange()
+                order_change.change_type = 'Add_SAN'
+                order_change.new_value = san
+                root.append(order_change.serialize())
+
+        if self.delete:
+            for san in self.delete:
+                order_change = OrderChange()
+                order_change.change_type = 'Delete_SAN'
+                order_change.old_value = san
+                root.append(order_change.serialize())
+
+        if self.edit:
+            for old_alternate_name, new_alternate_name in self.edit:
+                order_change = OrderChange()
+                order_change.change_type = 'Edit_SAN'
+                order_change.old_value = old_alternate_name
+                order_change.new_value = new_alternate_name
+                root.append(order_change.serialize())
+
+        return root
+
+    @property
+    def has_changes(self):
+        """Checks if OrderChanges has any available changes for processing.
+
+        :return: True or False for order changes
+        """
+        return self.add or self.delete or self.edit
+
+
 class Request(object):
 
     def __init__(self):
         self.partner_code = ''
         self.username = ''
         self.password = ''
+        self.partner_order_id = ''
         self.from_date = ''
         self.to_date = ''
         self.request_header = RequestHeader()
@@ -364,6 +451,13 @@ class Request(object):
             vulnerability_scan_details)
         self.query_options.certificate_algorithm_info = cert_algorithm_info
 
+    def set_partner_order_id(self, partner_order_id):
+        """Sets the partner order ID for order retrieval.
+
+        :param partner_order_id: the partner order id from a previous order
+        """
+        self.partner_order_id = partner_order_id
+
 
 class GetModifiedOrderRequest(Request):
 
@@ -450,7 +544,7 @@ class QuickOrderRequest(Request):
 
     def set_order_parameters(
             self, csr, domain_name, partner_order_id, renewal_indicator,
-            renewal_behavior, server_count, hash_algorithm,
+            renewal_behavior, hash_algorithm,
             special_instructions, valid_period, web_server_type,
             wildcard='false', dns_names=None
     ):
@@ -485,7 +579,6 @@ class QuickOrderRequest(Request):
         self.order_parameters.order_partner_order_id = partner_order_id
         self.order_parameters.renewal_indicator = renewal_indicator
         self.order_parameters.renewal_behavior = renewal_behavior
-        self.order_parameters.server_count = server_count
         self.order_parameters.signature_hash_algorithm = hash_algorithm
         self.order_parameters.special_instructions = special_instructions
         self.order_parameters.valid_period = valid_period
@@ -529,9 +622,65 @@ class GetOrderByPartnerOrderID(Request):
 
         return root
 
-    def set_partner_order_id(self, partner_order_id):
-        """Sets the partner order ID for order retrieval.
 
-        :param partner_order_id: the partner order id from a previous order
+class Reissue(Request):
+
+    def __init__(self):
+        super(Reissue, self).__init__()
+        self.response_model = ReissueResponse
+        self.order_parameters = OrderParameters()
+        self.order_changes = OrderChanges()
+        self.reissue_email = ReissueEmail()
+
+    def add_san(self, alternate_name):
+        """Adds SAN from original order.
+
+        :param alternate_name: the name to be added to reissue request
         """
-        self.partner_order_id = partner_order_id
+        self.order_changes.add.append(alternate_name)
+
+    def delete_san(self, alternate_name):
+        """Delete SAN from original order.
+
+        :param alternate_name: the name to be deleted from original order
+        """
+        self.order_changes.delete.append(alternate_name)
+
+    def edit_san(self, old_alternate_name, new_alternate_name):
+        """Edit SAN from original order to something new for reissue.
+
+        :param old_alternate_name: the name to be deleted from original order
+        :param new_alternate_name: the name to be added to reissue request
+        """
+        edits = (old_alternate_name, new_alternate_name)
+        self.order_changes.edit.append(edits)
+
+    def serialize(self):
+        """Serializes the Reissue request type.
+
+        The request model for the Reissue call in the Symantec SOAP XML API.
+        Serializes all related sections to this request model.
+
+        This will serialize the following:
+            Order Request Header
+            Order Parameters
+            Order Changes
+            Reissue Email
+
+        :return: root object for the reissue request xml object
+        """
+        root = etree.Element('Reissue', nsmap=utils.DEFAULT_ONS)
+        request = etree.SubElement(root, 'Request')
+        order_request_header = self.request_header.serialize(order_type=True)
+        order_parameters = self.order_parameters.serialize()
+        reissue_email = self.reissue_email.serialize()
+
+        sections = [order_request_header, order_parameters, reissue_email]
+        for item in sections:
+            request.append(item)
+
+        if self.order_changes.has_changes:
+            changes = self.order_changes.serialize()
+            request.append(changes)
+
+        return root
