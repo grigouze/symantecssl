@@ -227,13 +227,13 @@ class OrderParameters(object):
         self.csr = ''
         self.domain_name = ''
         self.order_partner_order_id = ''
-        self.renewal_indicator = 'true'
+        self.renewal_indicator = True
         self.renewal_behavior = ''
         self.signature_hash_algorithm = ''
         self.special_instructions = ''
         self.valid_period = '12'
         self.web_server_type = ''
-        self.wildcard = 'false'
+        self.wildcard = False
         self.dnsnames = ''
 
     def serialize(self):
@@ -247,17 +247,20 @@ class OrderParameters(object):
 
         root = etree.Element('OrderParameters')
 
+        renewal_indicator = utils._boolean_to_str(self.renewal_indicator, True)
+        wildcard = utils._boolean_to_str(self.wildcard, False)
+
         for node, node_text in [
             ('ValidityPeriod', self.valid_period),
             ('DomainName', self.domain_name),
             ('OriginalPartnerOrderID', self.order_partner_order_id),
             ('CSR', self.csr),
             ('WebServerType', self.web_server_type),
-            ('RenewalIndicator', self.renewal_indicator),
+            ('RenewalIndicator', renewal_indicator),
             ('RenewalBehavior', self.renewal_behavior),
             ('SignatureHashAlgorithm', self.signature_hash_algorithm),
             ('SpecialInstructions', self.special_instructions),
-            ('WildCard', self.wildcard),
+            ('WildCard', wildcard),
             ('DNSNames', self.dnsnames)
 
         ]:

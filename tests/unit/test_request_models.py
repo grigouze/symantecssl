@@ -7,6 +7,7 @@ from symantecssl.request_models import (
     OrderChanges, QuickOrderRequest, RequestHeader, RequestEnvelope, Reissue,
     ReissueEmail
 )
+from symantecssl import utils
 
 
 class TestRequestEnvelope(object):
@@ -190,13 +191,13 @@ class TestQuickOrderRequest(object):
             csr='Fake CSR',
             domain_name='example.com',
             partner_order_id='09182012',
-            renewal_indicator='false',
+            renewal_indicator=False,
             renewal_behavior='Thing',
             hash_algorithm='SHA2-256',
             special_instructions='Go to Flamerock',
             valid_period='12',
             web_server_type='apacheopenssl',
-            wildcard='true',
+            wildcard=True,
             dns_names='www.email.com, www.example.com'
         )
         root = qor.serialize()
@@ -399,3 +400,34 @@ class TestReissueEmail(object):
         root = re.serialize()
 
         assert root.text == 'nisha@domain.com'
+
+
+class TestHelperFunctions(object):
+
+    def test_true_bool_to_str(self):
+        value = True
+        default = True
+        new_string = utils._boolean_to_str(value, default)
+
+        assert new_string == 'true'
+
+    def test_false_bool_to_str(self):
+        value = False
+        default = True
+        new_string = utils._boolean_to_str(value, default)
+
+        assert new_string == 'false'
+
+    def test_none_bool_to_str(self):
+        value = None
+        default = True
+        new_string = utils._boolean_to_str(value, default)
+
+        assert new_string == 'true'
+
+    def test_junk_bool_to_str(self):
+        value = 'Scav'
+        default = False
+        new_string = utils._boolean_to_str(value, default)
+
+        assert new_string == 'false'
