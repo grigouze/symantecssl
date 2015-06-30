@@ -684,3 +684,75 @@ class Reissue(Request):
             request.append(changes)
 
         return root
+
+
+class ModifyOrderOperation(object):
+
+    def __init__(self):
+        self.modify_order_operation = 'APPROVE'
+
+    def serialize(self):
+        """Serializes the ModifyOrderOperation section for request.
+
+        :return: ele, operation element to be added to xml request
+        """
+        ele = etree.Element('ModifyOrderOperation')
+        ele.text = self.modify_order_operation
+
+        return ele
+
+    def set_modify_order_operation(self, operation):
+        self.modify_order_operation = operation
+
+
+class ModifyOrderReasonMessage(object):
+
+    def __init__(self):
+        self.modify_order_reason_message = ''
+
+    def serialize(self):
+        """Serializes the ModifyOrderReasonMessage section for request.
+
+        :return: ele, message element to be added to xml request
+        """
+        ele = etree.Element('ModifyOrderReasonMessage')
+        ele.text = self.modify_order_reason_message
+
+        return ele
+
+    def set_modify_order_reason_message(self, message):
+        self.modify_order_reason_message = message
+
+
+class ModifyOrder(Request):
+
+    def __init__(self):
+        super(ModifyOrder, self).__init__()
+        self.response_model = ReissueResponse
+        self.modify_order_operation = ModifyOrderOperation()
+        self.modify_order_reason_message = ModifyOrderReasonMessage()
+
+    def serialize(self):
+        """Serializes the Reissue request type.
+
+        The request model for the Reissue call in the Symantec SOAP XML API.
+        Serializes all related sections to this request model.
+
+        This will serialize the following:
+            Order Request Header
+            Modify Order Operation
+            Modify Order Reason Message
+
+        :return: root object for the reissue request xml object
+        """
+        root = etree.Element('ModifyOrder', nsmap=utils.DEFAULT_ONS)
+        request = etree.SubElement(root, 'Request')
+        order_request_header = self.request_header.serialize(order_type=True)
+        modify_order_operation = self.modify_order_operation.serialize()
+        modify_order_reason_message = self.modify_order_reason_message.serialize()
+
+        sections = [order_request_header, modify_order_operation, modify_order_reason_message]
+        for item in sections:
+            request.append(item)
+
+        return root
