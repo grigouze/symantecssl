@@ -756,3 +756,130 @@ class ModifyOrder(Request):
             request.append(item)
 
         return root
+
+
+class OrderPreAuthenticationParameters(object):
+
+    def __init__(self):
+        self.csr = ''
+        self.order_partner_order_id = ''
+        self.special_instructions = ''
+        self.contract_id = ''
+
+    def serialize(self):
+        """Serializes the Order Parameters section for the request.
+
+        note:: Symantec limits customers to 1, 12, 24, 36, and 48 month options
+        for validity period.
+
+        :return: root element of OrderParameters
+        """
+
+        root = etree.Element('OrderParameters')
+
+        for node, node_text in [
+            ('ValidityPeriod', self.valid_period),
+            ('SpecialInstructions', self.special_instructions),
+            ('ContractID', self.contract_id)
+
+        ]:
+            utils.create_subelement_with_text(root, node, node_text)
+
+        return root
+
+
+class DomainInfo(object):
+
+    def __init__(self):
+        self.domain_name = ''
+
+    def serialize(self):
+        """Serializes the Order Parameters section for the request.
+
+        note:: Symantec limits customers to 1, 12, 24, 36, and 48 month options
+        for validity period.
+
+        :return: root element of OrderParameters
+        """
+
+        root = etree.Element('DomainInfo')
+
+        domain = etree.SubElement(root, 'Domain')
+        name = etree.SubElement(domain, 'Name')
+        name.text = self.domain_name
+
+        return root
+
+    def set_domain_name(self, domain_name):
+        self.domain_name = domain_name
+
+
+class OrderPreAuthenticationRequest(Request):
+
+    def __init__(self):
+        super(OrderPreAuthenticationRequest, self).__init__()
+        self.order_parameters = OrderPreAuthenticationParameters()
+        self.order_contacts = OrderContacts()
+        self.organization_info = OrganizationInfo()
+        self.domain_info = DomainInfo()
+        self.response_model = QuickOrderResponse
+
+    def serialize(self):
+        """Serializes the quick order request.
+
+        The request model for the QuickOrder call in the Symantec
+        SOAP XML API. Serializes all related sections to this request model.
+
+        This will serialize the following:
+            Order Request Header
+            Order Contacts
+            Organization Info
+
+        :return: root element of the QuickOrderRequest section
+        """
+
+        root = etree.Element('OrderPreAuthentication', nsmap=utils.DEFAULT_ONS)
+        order_request_header = self.request_header.serialize(order_type=True)
+
+        request = etree.SubElement(root, 'AuthOrderRequest')
+        order_parameters = self.order_parameters.serialize()
+        organization_info = self.organization_info.serialize()
+        admin_contact, tech_contact, billing_contact = (
+            self.order_contacts.serialize()
+        )
+
+        domain_info = self.domain_info.serialize()
+
+        auth_data = etree.SubElement(root, 'AuthData')
+        auth_data.append(organization_info)
+        auth_data.append(domain_info)
+
+        contact_info = etree.SubElement(auth_data, 'ContactInfo')
+        pair = etree.SubElement(contact_info, 'ContactPair')
+        pair.append(admin_contact)
+        pair.append(tech_contact)
+
+        for item in [
+            order_request_header, order_parameters, auth_data, billing_contact
+        ]:
+            request.append(item)
+
+        return root
+
+    def set_order_parameters(
+            self, contract_id, valid_period, special_instructions
+    ):
+        """Sets the parameters for the order request.
+
+        Allows the user to change the order parameters options.
+        Check the Symantec API documentation for specifics on each of these
+        components.
+
+        :param special_instructions: notes for the approver
+        :param valid_period: length of certificate in months. Defaults to 12.
+        See Symantec API documentation for specifics per product.
+        """
+
+        self.order_parameters.contract_id = contract_id
+        self.order_parameters.valid_period = valid_period
+        self.order_parameters.special_instructions = special_instructions
