@@ -12,7 +12,7 @@ class FailedRequest(Exception):
     pass
 
 
-def post_request(endpoint, request_model, credentials):
+def post_request(endpoint, request_model, credentials, verify_ssl=True):
     """Create a post request against Symantec's SOAPXML API.
 
     Currently supported Request Models are:
@@ -42,7 +42,8 @@ def post_request(endpoint, request_model, credentials):
 
     headers = {'Content-Type': 'application/soap+xml'}
 
-    response = requests.post(endpoint, serialized_xml, headers=headers)
+    response = requests.post(endpoint, serialized_xml, headers=headers,
+                             verify=verify_ssl)
     setattr(response, "model", None)
 
     # Symantec not expected to return 2xx range; only 200
