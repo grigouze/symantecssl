@@ -799,14 +799,24 @@ class DomainInfo(object):
         note:: Symantec limits customers to 1, 12, 24, 36, and 48 month options
         for validity period.
 
+        note:: Specify 1-30 domains.
+
         :return: root element of OrderParameters
         """
 
+        mydomains = []
+
+        if isinstance(self.domain_name, (str, unicode)):
+            mydomains.append(self.domain_name)
+        else:
+            mydomains = self.domain_name
+
         root = etree.Element('DomainInfo')
 
-        domain = etree.SubElement(root, 'Domain')
-        name = etree.SubElement(domain, 'Name')
-        name.text = self.domain_name
+        for mydomain in mydomains:
+            domain = etree.SubElement(root, 'Domain')
+            name = etree.SubElement(domain, 'Name')
+            name.text = mydomain
 
         return root
 
