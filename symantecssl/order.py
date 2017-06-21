@@ -40,7 +40,8 @@ def post_request(endpoint, request_model, credentials, verify_ssl=True):
     model = ReqEnv(request_model=request_model)
     serialized_xml = etree.tostring(model.serialize(), pretty_print=True)
 
-    headers = {'Content-Type': 'application/soap+xml'}
+    #headers = {'Content-Type': 'application/soap+xml'}
+    headers = {}
 
     response = requests.post(endpoint, serialized_xml, headers=headers,
                              verify=verify_ssl)
