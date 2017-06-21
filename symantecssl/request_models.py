@@ -890,6 +890,6 @@ class OrderPreAuthenticationRequest(Request):
         See Symantec API documentation for specifics per product.
         """
 
-        self.order_parameters.contract_id = contract_id
+        #self.order_parameters.contract_id = contract_id
         self.order_parameters.valid_period = valid_period
         self.order_parameters.special_instructions = special_instructions
